@@ -19,5 +19,8 @@ novos simulados — está em **[`vce-web/README.md`](vce-web/README.md)**.
 
 <img width="1919" height="870" alt="image" src="https://github.com/user-attachments/assets/a416ce1e-f735-45a8-9a16-13cf51225c3b" />
 
+<img width="1918" height="875" alt="image" src="https://github.com/user-attachments/assets/9fa94fb9-36dd-41e6-b0a1-d1b8bff35a1b" />
+
+
 
 
