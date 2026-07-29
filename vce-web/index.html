@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado LPIC-2 - VCE Web Player</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== TELA INICIAL ===================== -->
+<div id="setupScreen">
+  <div class="titlebar">VCE Web Player</div>
+
+  <div class="setupWrap">
+    <div class="setupCard">
+      <h2>Modo de Exame</h2>
+
+      <div class="field">
+        <label>Prova:</label>
+        <select id="examSelect"></select>
+      </div>
+
+      <div class="field">
+        <label>Nome do candidato:</label>
+        <input type="text" id="candidateName" value="Candidato" />
+      </div>
+
+      <fieldset class="modeBox">
+        <legend>Modo de Exame</legend>
+
+        <label class="radioRow">
+          <input type="radio" name="mode" value="all" checked>
+          Fazer <span id="allCount">todas</span> as questoes do arquivo
+        </label>
+
+        <label class="radioRow">
+          <input type="radio" name="mode" value="range">
+          Fazer questoes da faixa
+          <input type="number" id="rangeFrom" min="1" value="1" class="numSmall">
+          ate
+          <input type="number" id="rangeTo" min="1" value="161" class="numSmall">
+        </label>
+
+        <label class="radioRow">
+          <input type="radio" name="mode" value="count">
+          Fazer
+          <input type="number" id="countN" min="1" value="20" class="numSmall">
+          questoes aleatorias
+        </label>
+
+        <label class="radioRow">
+          <input type="radio" name="mode" value="topic">
+          Fazer apenas questoes do topico
+          <select id="topicSelect" class="numSmall"></select>
+        </label>
+
+        <label class="radioRow">
+          <input type="radio" name="mode" value="qtype">
+          Fazer apenas questoes do tipo
+          <select id="qtypeSelect" class="numSmall">
+            <option value="single">Selecao unica</option>
+            <option value="multi">Multipla escolha</option>
+            <option value="text">Escrita (dissertativa)</option>
+          </select>
+        </label>
+
+        <label class="radioRow">
+          <input type="radio" name="mode" value="custom">
+          Refazer lista personalizada (usado pelo botao "Refazer")
+          <span id="customInfo" class="customInfo"></span>
+        </label>
+
+        <label class="checkRow">
+          <input type="checkbox" id="randomizeQ"> Embaralhar ordem das questoes
+        </label>
+        <label class="checkRow">
+          <input type="checkbox" id="randomizeChoices"> Embaralhar alternativas dentro de cada questao
+        </label>
+        <label class="checkRow">
+          <input type="checkbox" id="trainingMode" checked>
+          Modo treino (mostra se acertou logo apos responder)
+        </label>
+      </fieldset>
+
+      <fieldset class="modeBox">
+        <legend>Pontuacao e Timer</legend>
+        <label class="checkRow">
+          Nota minima para aprovacao (escala 0-1000):
+          <input type="number" id="passingScore" min="0" max="1000" value="500" class="numSmall">
+        </label>
+        <label class="checkRow">
+          <input type="checkbox" id="timerOn"> Timer ligado
+          &nbsp;&nbsp; Limite (minutos):
+          <input type="number" id="timerMinutes" min="1" value="120" class="numSmall">
+        </label>
+      </fieldset>
+
+      <div class="setupButtons">
+        <button id="btnStart" class="primary">Iniciar</button>
+        <button id="btnContinue">Continuar sessao salva</button>
+        <button id="btnHistory">Historico de Notas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TELA DA PROVA ===================== -->
+<div id="examScreen" style="display:none;">
+  <div class="titlebar">
+    <span id="examTitle">Custom Exam - VCE Web Player</span>
+    <span id="timerDisplay" class="timerDisplay" style="display:none;"></span>
+  </div>
+
+  <div class="topbar">
+    <label class="mark-label"><input type="checkbox" id="markCheckbox"> Marcar</label>
+    <div class="score">Pontuacao Atual: <span id="scoreDisplay">0/0</span></div>
+  </div>
+
+  <div class="content">
+    <div class="questionHeader">
+      <div class="itemInfo">
+        Item <span id="itemIndex">1</span> de <span id="itemTotal">0</span>
+        (<span id="candidateLabel"></span>Q<span id="itemQNum">1</span>)
+      </div>
+      <div class="headerButtons">
+        <button id="btnShowAnswer">Mostrar Resposta</button>
+        <button id="btnCalculator">Calculadora</button>
+      </div>
+    </div>
+    <hr>
+    <div class="topicLine">- (Topico <span id="topicNum">1</span>)</div>
+    <div class="questionText" id="questionText"></div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="answerBox" id="answerBox" style="display:none;">
+      <div id="answerText" class="answerLine"></div>
+      <div id="explanationText" class="explanationLine"></div>
+    </div>
+  </div>
+
+  <div class="calculatorPanel" id="calculatorPanel" style="display:none;">
+    <div class="calc-display" id="calcDisplay">0</div>
+    <div class="calc-grid" id="calcGrid"></div>
+  </div>
+
+  <div class="statusbar"><span id="statusText">Selecione a melhor alternativa.</span></div>
+
+  <div class="bottombar">
+    <button id="btnPrevious">Anterior</button>
+    <button id="btnNext">Proxima</button>
+    <div class="reviewDropdownWrap">
+      <button id="btnReview">Revisao</button>
+      <div class="reviewMenu" id="reviewMenu" style="display:none;">
+        <div data-mode="all">Revisar Todas</div>
+        <div data-mode="marked">Revisar Marcadas</div>
+        <div data-mode="incomplete">Revisar Incompletas</div>
+        <div data-mode="wrong">Revisar Erradas</div>
+      </div>
+    </div>
+    <button id="btnBackToSetup">Menu Inicial</button>
+    <div class="spacer"></div>
+    <button id="btnSave">Salvar Sessao</button>
+    <button id="btnEnd" class="primary">Finalizar Exame</button>
+  </div>
+</div>
+
+<!-- ===================== OVERLAY DE REVISAO ===================== -->
+<div class="reviewOverlay" id="reviewOverlay" style="display:none;">
+  <div class="reviewBox">
+    <h3 id="reviewTitle">Revisao</h3>
+    <div class="reviewList" id="reviewList"></div>
+    <button id="closeReview">Fechar</button>
+  </div>
+</div>
+
+<!-- ===================== SCORE REPORT ===================== -->
+<div class="reportOverlay" id="reportOverlay" style="display:none;">
+  <div class="reportBox">
+    <div class="reportTitleBar">Relatorio de Pontuacao (Score Report)</div>
+    <div class="reportBody" id="reportBody"></div>
+    <div class="reportButtons">
+      <button id="btnRetakeWrong">Refazer Erradas</button>
+      <button id="btnRetakeIncomplete">Refazer Incompletas</button>
+      <button id="btnReviewFromReport">Revisar Respostas</button>
+      <button id="btnPrintReport">Imprimir</button>
+      <button id="closeReport" class="primary">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== HISTORICO ===================== -->
+<div class="reportOverlay" id="historyOverlay" style="display:none;">
+  <div class="reportBox">
+    <div class="reportTitleBar">Historico de Notas (Score History)</div>
+    <div class="reportBody" id="historyBody"></div>
+    <div class="reportButtons">
+      <button id="btnClearHistory">Limpar Historico</button>
+      <button id="closeHistory" class="primary">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="exams.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

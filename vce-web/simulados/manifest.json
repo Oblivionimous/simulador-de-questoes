@@ -1,0 +1,7 @@
+{
+  "_comentario": "Liste os arquivos .txt dos simulados na ordem que devem aparecer no app. Se apagar este arquivo, o app carrega automaticamente todos os .txt da pasta em ordem alfabetica.",
+  "files": [
+    "lpi-201-450.txt",
+    "EXEMPLO-modelo.txt"
+  ]
+}
