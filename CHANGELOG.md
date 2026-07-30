@@ -10,6 +10,38 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Explicações das questões expandidas
+
+**Motivação:** as explicações mostradas na caixa de resposta eram curtas
+(1-2 linhas); o objetivo é torná-las mais didáticas, com até 5 linhas cada.
+
+### Alterado
+- Campo `EXPLICACAO:` de todas as 161 questões de
+  `vce-web/simulados/lpi-201-450.txt` e das 3 questões de
+  `vce-web/simulados/EXEMPLO-modelo.txt` reescrito: cada explicação agora
+  tem 2-5 linhas com contexto técnico, o porquê da resposta correta e,
+  quando relevante, por que as alternativas erradas mais plausíveis não
+  servem. Usa o formato multi-linha já suportado pelo parser (linhas de
+  continuação após `EXPLICACAO:`), renderizado com quebras reais na caixa
+  de resposta (`white-space: pre-wrap`).
+- `vce-web/exams.js` regenerado via `php gerar_exams.php` para refletir as
+  novas explicações no modo offline.
+
+### Observação
+- A questão `@@@130` (comando que exibe o caminho físico de um módulo do
+  kernel) mantém o gabarito original `A` (modprobe -i), mas a explicação
+  registra a ressalva de que o comando classicamente documentado para isso
+  é `modinfo -n` (alternativa B) — gabarito a conferir.
+
+### Testes realizados
+- Contagens estruturais preservadas: 161 blocos `@@@`/`RESPOSTA` no
+  lpi-201-450 e 3 no EXEMPLO (nenhuma questão perdida/duplicada).
+- Diff confirmando que apenas linhas de explicação mudaram (perguntas,
+  alternativas e gabaritos intactos).
+- `php gerar_exams.php` reproduzível (regenerar não gera diferença).
+- Verificação visual no navegador (Playwright): explicação multi-linha da
+  questão 1 renderizada corretamente na caixa de resposta.
+
 ## 2026-07-30 — Modo escuro
 
 **Motivação:** oferecer uma opção de tema escuro para quem usa o simulador

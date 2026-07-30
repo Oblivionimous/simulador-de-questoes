@@ -13,7 +13,9 @@ B: whoami
 C: uname -a
 D: id
 RESPOSTA: A
-EXPLICACAO: O comando hostname exibe (ou define) o nome do host da maquina.
+EXPLICACAO: O comando hostname exibe (sem argumentos) o nome do host configurado no sistema.
+Usado com um argumento, ele tambem pode definir um novo nome de host temporariamente (ate o proximo boot).
+whoami mostra o usuario logado, uname -a mostra informacoes do kernel e id mostra UID/GID; nenhum retorna o hostname.
 
 @@@2
 TOPICO: 1
@@ -24,11 +26,15 @@ B: vmstat
 C: passwd
 D: chmod
 RESPOSTA: A,B
-EXPLICACAO: free mostra memoria livre/usada; vmstat mostra memoria, paginacao e I/O.
+EXPLICACAO: free mostra um resumo de memoria RAM e swap: total, usada, livre, buffers e cache.
+vmstat tambem reporta memoria, alem de estatisticas de paginacao (swap) e I/O em uma unica saida.
+passwd gerencia senhas de usuarios e chmod altera permissoes de arquivos; nenhum dos dois exibe uso de memoria.
 
 @@@3
 TOPICO: 2
 TIPO: text
 PERGUNTA: Informe o caminho completo do arquivo que define os pontos de montagem carregados no boot.
 RESPOSTA: /etc/fstab
-EXPLICACAO: O /etc/fstab lista os sistemas de arquivos e suas opcoes de montagem no boot.
+EXPLICACAO: O arquivo /etc/fstab lista os sistemas de arquivos que devem ser montados automaticamente durante o boot.
+Cada linha define o dispositivo, o ponto de montagem, o tipo de filesystem, as opcoes de montagem, e os campos de dump e ordem do fsck.
+E consultado tanto pelo processo de boot quanto pelo comando mount quando usado sem todos os parametros.

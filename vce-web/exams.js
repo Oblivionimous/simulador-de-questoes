@@ -23,7 +23,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "As aplicações precisam reiniciar porque seus endereços de memória virtual mudam para refletir a realocação de memória para a área de swap."
                     },
                     "answer": "B",
-                    "explanation": "O uso intenso de swap forca paging constante entre RAM e disco. Como o disco e muito mais lento que a RAM, o desempenho geral degrada."
+                    "explanation": "O uso pesado de swap forca o kernel a mover paginas de memoria entre RAM e disco constantemente (paging).\nComo o disco e ordens de magnitude mais lento que a RAM, isso degrada o desempenho geral do sistema.\nA opcao A esta errada porque o swap fica em particao\/arquivo proprio, nao na particao root.\nC e D descrevem comportamentos que nao correspondem ao funcionamento real do gerenciamento de memoria do kernel."
                 },
                 {
                     "id": 2,
@@ -37,7 +37,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "sy"
                     },
                     "answer": "B,D",
-                    "explanation": "No vmstat, a coluna 'us' (user) mostra tempo de CPU em codigo de usuario e 'sy' (system) mostra tempo em codigo do kernel."
+                    "explanation": "No vmstat, a secao 'cpu' divide o tempo de CPU em varias categorias.\n'us' (user) e o percentual gasto executando codigo de espaco de usuario (aplicacoes).\n'sy' (system) e o percentual gasto executando codigo do kernel (chamadas de sistema, drivers).\n'id' e tempo ocioso e 'wa' e espera por I\/O, por isso essas duas colunas nao respondem a pergunta."
                 },
                 {
                     "id": 3,
@@ -52,7 +52,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Se a instalação do SO será via CD, DVD ou rede."
                     },
                     "answer": "A,C,D",
-                    "explanation": "O dimensionamento depende de quantos usuarios simultaneos, do tipo de conteudo servido e das linguagens de script suportadas. Vendedor de hardware e midia de instalacao nao afetam o sizing."
+                    "explanation": "O dimensionamento de um servidor web depende de fatores que afetam carga e recursos necessarios.\nO numero de usuarios simultaneos define quanta CPU, memoria e conexoes serao exigidas.\nO tipo de conteudo (estatico x dinamico) e as linguagens de script suportadas mudam o custo por requisicao.\nFabricante de hardware e midia de instalacao sao decisoes operacionais, sem impacto direto no sizing."
                 },
                 {
                     "id": 4,
@@ -66,7 +66,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "cifsiostat"
                     },
                     "answer": "B,D",
-                    "explanation": "nfsiostat coleta estatisticas de I\/O de montagens NFS e cifsiostat de montagens CIFS\/SMB. Ambos servem para conexoes de filesystem remoto."
+                    "explanation": "nfsiostat exibe estatisticas de I\/O (taxa de transferencia, latencia, RPCs) para montagens NFS.\ncifsiostat faz o equivalente para montagens CIFS\/SMB.\npidstat mede uso de recursos por processo e sadf formata dados historicos do sar, sem foco em filesystems remotos."
                 },
                 {
                     "id": 5,
@@ -81,7 +81,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "36.6"
                     },
                     "answer": "A",
-                    "explanation": "A coluna 'wa' (wait) indica a espera por I\/O. Como todos os valores em 'wa' na saida sao 0, a resposta e 0."
+                    "explanation": "A coluna 'wa' do vmstat mostra o percentual de tempo em que a CPU ficou parada esperando I\/O pendente.\nEm todas as linhas da saida o valor de 'wa' e 0, ou seja, nao houve espera por I\/O nesse periodo.\nPor isso a resposta correta e 0%, refletindo diretamente o que esta na coluna."
                 },
                 {
                     "id": 6,
@@ -95,7 +95,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "telinit"
                     },
                     "answer": "B,C",
-                    "explanation": "lsof lista arquivos abertos por processos e pstree mostra a hierarquia de processos; ambos ajudam a identificar processos de interesse."
+                    "explanation": "lsof lista todos os arquivos (incluindo sockets) abertos por processos, ajudando a identificar o que um processo usa.\npstree exibe a arvore de processos, mostrando relacoes de pai\/filho e facilitando localizar processos de interesse.\nacpid trata eventos de energia\/ACPI e telinit troca de runlevel; nenhum dos dois serve para identificar processos."
                 },
                 {
                     "id": 7,
@@ -110,7 +110,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "RAM usada para cache do sistema de arquivos"
                     },
                     "answer": "C,D,E",
-                    "explanation": "No vmstat: 'free' = RAM livre disponivel, 'buff' = RAM usada para buffers e 'cache' = RAM usada para cache do filesystem."
+                    "explanation": "No vmstat, 'free' e a quantidade de RAM totalmente livre, sem uso algum.\n'buff' e RAM usada por buffers do kernel (metadados de I\/O) e 'cache' e RAM usada como cache de paginas de arquivos.\nBuffers e cache podem ser liberados sob pressao de memoria, entao nao contam como 'em uso' no sentido estrito.\n'swpd' seria o espaco de swap usado, o que nao corresponde ao que as opcoes descrevem."
                 },
                 {
                     "id": 8,
@@ -125,7 +125,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Não existe um intervalo de 5 minutos. É algum valor entre 24.71 e 35.31."
                     },
                     "answer": "B",
-                    "explanation": "No load average, os tres numeros representam 1, 5 e 15 minutos. O segundo valor (24.71) e a media de 5 minutos."
+                    "explanation": "O uptime\/load average sempre mostra tres numeros, na ordem: media de 1, 5 e 15 minutos.\nO segundo valor da lista corresponde ao intervalo de 5 minutos.\nNa saida do exemplo, esse valor e 24.71."
                 },
                 {
                     "id": 9,
@@ -139,7 +139,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "LoadPlugin"
                     },
                     "answer": "D",
-                    "explanation": "A diretiva LoadPlugin no collectd.conf carrega e ativa um plugin, definindo o que sera monitorado."
+                    "explanation": "O collectd usa uma arquitetura baseada em plugins para coletar cada tipo de metrica.\nA diretiva LoadPlugin no collectd.conf carrega e ativa um plugin especifico, definindo o que sera monitorado.\n'Plugin' e usada dentro do bloco para configurar opcoes do plugin ja carregado, nao para carrega-lo.\n'Module' e 'LoadModule' nao sao diretivas validas do collectd."
                 },
                 {
                     "id": 10,
@@ -154,7 +154,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "freemem"
                     },
                     "answer": "A",
-                    "explanation": "O comando top mostra os processos ordenados por uso de CPU em tempo real, junto com seus PIDs."
+                    "explanation": "O comando top exibe, em tempo real, os processos em execucao ordenados por uso de CPU, junto com seus PIDs.\nuptime so mostra o load average, sem lista de processos; vmstat mostra estatisticas agregadas do sistema.\nps aux lista processos mas nao ordena por CPU por padrao (seria necessario ps aux --sort=-%cpu)."
                 },
                 {
                     "id": 11,
@@ -169,7 +169,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "15, 30 e 60 segundos"
                     },
                     "answer": "A",
-                    "explanation": "As tres cargas do load average correspondem sempre a 1, 5 e 15 minutos."
+                    "explanation": "As tres medias do load average correspondem sempre as janelas de 1, 5 e 15 minutos.\nEsse padrao e fixo no kernel Linux e aparece em uptime, w e no cabecalho do top."
                 },
                 {
                     "id": 12,
@@ -184,7 +184,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "vmstat"
                     },
                     "answer": "C,D,E",
-                    "explanation": "sar, top e vmstat exibem informacoes de uso de memoria; mpstat foca em CPU e pstree em hierarquia de processos."
+                    "explanation": "sar, top e vmstat exibem estatisticas de uso de memoria (livre, usada, buffers, cache), entre outras metricas.\nmpstat foca exclusivamente em estatisticas de CPU por processador.\npstree mostra apenas a hierarquia de processos, sem dados de memoria."
                 },
                 {
                     "id": 13,
@@ -199,7 +199,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Resolver um problema de software."
                     },
                     "answer": "A,D,E",
-                    "explanation": "Dados historicos ajudam a prever necessidade de recursos, diagnosticar problemas de capacidade e resolver problemas de software ao longo do tempo."
+                    "explanation": "Dados historicos de uso de recursos permitem prever quando sera necessario expandir CPU, RAM ou disco.\nTambem ajudam a diagnosticar problemas de capacidade, comparando o comportamento atual com o padrao historico.\nE servem para investigar problemas de software que se manifestam ao longo do tempo (ex: vazamento de memoria).\nSelecionar fornecedor de hardware e identificar processos mortos pelo OOM killer nao dependem de dados historicos."
                 },
                 {
                     "id": 14,
@@ -214,7 +214,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "vmstat"
                     },
                     "answer": "E",
-                    "explanation": "O vmstat reporta uso de memoria, paginacao (swap) e I\/O de blocos em uma unica saida."
+                    "explanation": "vmstat reune, numa unica saida, estatisticas de memoria, paginacao (swap in\/out) e I\/O de blocos (bi\/bo).\nfree mostra so memoria; ps foca em processos; top e mais voltado a CPU e processos em tempo real."
                 },
                 {
                     "id": 15,
@@ -228,7 +228,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Processos aguardando a conclusão de operações de I\/O."
                     },
                     "answer": "D",
-                    "explanation": "O estado 'wa' representa processos esperando a conclusao de operacoes de I\/O (disco\/rede)."
+                    "explanation": "O estado 'wa' (iowait) no top representa o percentual de tempo em que a CPU ficou ociosa esperando I\/O terminar.\nIsso ocorre quando processos estao bloqueados aguardando leitura\/escrita em disco ou rede.\nAs outras opcoes descrevem processos parados ou reagendados, o que corresponde a outros estados (D, T, Z), nao a wa."
                 },
                 {
                     "id": 16,
@@ -242,7 +242,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Ele faz consultas SNMP aos clientes que estão sendo monitorados."
                     },
                     "answer": "A",
-                    "explanation": "O collectd usa uma biblioteca de plugins; cada plugin coleta um tipo de metrica."
+                    "explanation": "O collectd e construido em torno de uma biblioteca de plugins carregaveis.\nCada plugin e responsavel por coletar um tipo especifico de metrica (CPU, memoria, rede, etc.).\nNao existe um modelo mestre\/cliente por SNMP nem coleta centralizada; a coleta e feita localmente por plugin em cada host."
                 },
                 {
                     "id": 17,
@@ -257,7 +257,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Uma lista de módulos que o kernel precisa para executar."
                     },
                     "answer": "D",
-                    "explanation": "O modules.dep, gerado pelo depmod, lista todos os modulos compilados e suas dependencias, permitindo ao modprobe carregar automaticamente os dependentes."
+                    "explanation": "O arquivo modules.dep e gerado pelo comando depmod a partir dos modulos instalados em \/lib\/modules\/<versao>.\nEle lista todos os modulos compilados disponiveis e suas dependencias entre si.\nCom essa informacao, o modprobe consegue carregar automaticamente os modulos dos quais um modulo depende."
                 },
                 {
                     "id": 18,
@@ -266,7 +266,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Após configurar um novo kernel, qual arquivo em \/usr\/src\/linux\/ contém a configuração?",
                     "options": {},
                     "answer": "\/usr\/src\/linux\/.config, .config",
-                    "explanation": "A configuracao do kernel apos o make config fica no arquivo oculto .config em \/usr\/src\/linux\/."
+                    "explanation": "Apos rodar make config\/menuconfig\/oldconfig, as opcoes escolhidas sao gravadas no arquivo .config.\nEsse arquivo, oculto por comecar com ponto, fica na raiz da arvore de fontes, em \/usr\/src\/linux\/.config."
                 },
                 {
                     "id": 19,
@@ -281,7 +281,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "stable"
                     },
                     "answer": "C,E",
-                    "explanation": "Kernels 3.x usam os rotulos 'longterm' (suporte de longo prazo) e 'stable' (estavel) para descrever seus tipos de release."
+                    "explanation": "A partir da serie 3.x, o kernel.org classifica releases principalmente como 'stable' (ultima versao estavel) ou 'longterm' (suporte estendido).\n'beta', 'final' e 'prerelease' nao sao os rotulos usados oficialmente para as arvores 3.x."
                 },
                 {
                     "id": 20,
@@ -295,7 +295,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Ele se comunica com o D-Bus para configurar novos dispositivos."
                     },
                     "answer": "A",
-                    "explanation": "udevadm monitor escuta os eventos (uevents) que o kernel emite ao detectar mudancas de hardware e os imprime no console."
+                    "explanation": "udevadm monitor escuta em tempo real os eventos do kernel (uevents) gerados quando dispositivos sao adicionados ou removidos.\nEsses eventos, junto com os eventos processados pelas regras udev, sao impressos no console conforme ocorrem.\nEle nao varre o \/dev periodicamente nem mede desempenho do daemon udev."
                 },
                 {
                     "id": 21,
@@ -304,7 +304,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Uma aplicação de banco de dados requer um segmento máximo de memória compartilhada (shmmax) de GB (2147483648 Bytes). Qual arquivo de configuração deve ser modificado para definir esse parâmetro do kernel permanentemente? (Especifique o nome completo do arquivo, incluindo o caminho.)",
                     "options": {},
                     "answer": "\/etc\/sysctl.conf",
-                    "explanation": "Parametros permanentes do kernel sao definidos em \/etc\/sysctl.conf, aplicados no boot via sysctl."
+                    "explanation": "Parametros do kernel definidos via \/proc\/sys sao volateis e se perdem no reboot.\nPara torna-los permanentes, eles devem ser gravados em \/etc\/sysctl.conf (ou em arquivos de \/etc\/sysctl.d\/).\nO sysctl aplica esses valores automaticamente durante o boot."
                 },
                 {
                     "id": 22,
@@ -319,7 +319,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "rc.config-3.4.50-11"
                     },
                     "answer": "B",
-                    "explanation": "No \/boot, os parametros de configuracao do kernel ficam em config-<versao>, ex: config-3.4.50-11."
+                    "explanation": "O kernel Linux, ao ser compilado e instalado, deixa uma copia do .config usado em \/boot com o nome config-<versao>.\nEsse arquivo permite consultar depois quais opcoes foram habilitadas naquele kernel especifico.\nvmlinuz-<versao> e a imagem binaria do kernel, nao o arquivo de configuracao."
                 },
                 {
                     "id": 23,
@@ -328,7 +328,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Uma nova versão do kernel precisa ser compilada para usar um novo recurso. Se o arquivo de configuração do kernel antigo estiver disponível, qual alvo (target) do make cria um arquivo de configuração para o novo kernel baseado na configuração do kernel antigo?",
                     "options": {},
                     "answer": "oldconfig, make oldconfig",
-                    "explanation": "make oldconfig cria um novo .config reaproveitando as respostas do .config antigo, perguntando apenas sobre opcoes novas."
+                    "explanation": "O alvo 'make oldconfig' reaproveita um arquivo .config existente de uma versao anterior do kernel.\nEle pergunta ao usuario apenas sobre as opcoes novas que nao existiam na configuracao antiga.\nAssim, evita ter que responder novamente a todas as perguntas de configuracao do zero."
                 },
                 {
                     "id": 24,
@@ -342,7 +342,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "zImage é carregada completamente na memória baixa (low memory). bzImage será carregada na memória alta (high memory) assim que a memória baixa estiver cheia."
                     },
                     "answer": "D",
-                    "explanation": "zImage e carregada inteiramente na memoria baixa (limite ~640KB); bzImage (big zImage) pode ser carregada na memoria alta, permitindo kernels maiores."
+                    "explanation": "zImage e um kernel comprimido que so pode ser carregado inteiramente na memoria baixa (limitada a cerca de 640KB).\nbzImage ('big zImage') supera essa limitacao, permitindo carregar partes do kernel na memoria alta.\nIsso viabiliza kernels maiores, algo que se tornou necessario com o crescimento do codigo do kernel."
                 },
                 {
                     "id": 25,
@@ -356,7 +356,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "É fornecido como um download separado junto com o código-fonte do kernel Linux da mesma versão."
                     },
                     "answer": "A",
-                    "explanation": "O codigo-fonte dos modulos principais e distribuido junto com o codigo-fonte do proprio kernel Linux."
+                    "explanation": "O codigo-fonte dos modulos principais (in-tree) do kernel Linux vem junto com o proprio codigo-fonte do kernel.\nNao ha download separado nem ciclo de release independente para esses modulos principais.\nModulos de terceiros\/out-of-tree podem ter ciclos proprios, mas nao e o caso descrito na pergunta."
                 },
                 {
                     "id": 26,
@@ -365,7 +365,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual comando é usado para descarregar (unload) um único módulo atualmente carregado pelo kernel sem descarregar quaisquer módulos dos quais ele dependa? (Especifique o comando com ou sem informação de caminho)",
                     "options": {},
                     "answer": "rmmod, \/sbin\/rmmod",
-                    "explanation": "rmmod descarrega um unico modulo sem tocar em suas dependencias (diferente de modprobe -r)."
+                    "explanation": "rmmod descarrega um unico modulo do kernel especificado, sem tentar remover modulos dos quais ele depende.\nIsso contrasta com 'modprobe -r', que tambem remove dependencias que ficaram sem uso."
                 },
                 {
                     "id": 27,
@@ -374,7 +374,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual diretório contém os arquivos de regras udev específicos do sistema? (Especifique o caminho absoluto incluindo o nome do diretório)",
                     "options": {},
                     "answer": "\/etc\/udev\/rules.d, \/etc\/udev\/rules.d\/",
-                    "explanation": "As regras udev especificas do sistema (do administrador) ficam em \/etc\/udev\/rules.d\/."
+                    "explanation": "As regras udev do administrador do sistema (customizadas) ficam em \/etc\/udev\/rules.d\/.\nRegras padrao da distribuicao normalmente ficam em \/lib\/udev\/rules.d\/, mas as regras locais vao no diretorio em \/etc."
                 },
                 {
                     "id": 28,
@@ -389,7 +389,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "bzip2"
                     },
                     "answer": "D",
-                    "explanation": "A imagem initramfs e um arquivo cpio (geralmente comprimido), extraido pelo kernel no boot."
+                    "explanation": "A imagem initramfs e, na essencia, um arquivo no formato cpio (geralmente comprimido com gzip).\nO kernel extrai esse arquivo cpio para um sistema de arquivos temporario em RAM durante o boot.\ntar, RAR e bzip2 nao sao os formatos usados para montar o conteudo do initramfs."
                 },
                 {
                     "id": 29,
@@ -403,7 +403,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "vcpumx=1"
                     },
                     "answer": "A",
-                    "explanation": "O parametro de boot maxcpus=1 limita o kernel a usar apenas um processador."
+                    "explanation": "O parametro de boot maxcpus=N limita quantos processadores o kernel vai ativar durante a inicializacao.\nDefinindo maxcpus=1, o kernel usara apenas um processador, mesmo em hardware multi-core.\nAs demais opcoes (usecpus, smpcpus, vcpumx) nao sao parametros reais de boot do kernel Linux."
                 },
                 {
                     "id": 30,
@@ -418,7 +418,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "export kernel.shmmax=2147483648"
                     },
                     "answer": "C,D",
-                    "explanation": "sysctl kernel.shmmax=... e echo ... > \/proc\/sys\/kernel\/shmmax alteram o parametro em tempo de execucao (nao persistente)."
+                    "explanation": "Parametros do kernel podem ser alterados em tempo de execucao via sysctl ou diretamente pela arvore \/proc\/sys.\n'sysctl kernel.shmmax=...' usa o nome completo do parametro (kernel.shmmax), diferente de so 'shmmax'.\n'echo valor > \/proc\/sys\/kernel\/shmmax' escreve diretamente no arquivo correspondente na arvore \/proc\/sys.\nNenhuma dessas mudancas e persistente apos reboot; para isso seria necessario editar \/etc\/sysctl.conf."
                 },
                 {
                     "id": 31,
@@ -433,7 +433,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "probemod"
                     },
                     "answer": "A,D",
-                    "explanation": "insmod carrega um modulo diretamente; modprobe carrega o modulo resolvendo automaticamente suas dependencias."
+                    "explanation": "insmod carrega um modulo especifico diretamente no kernel, sem resolver dependencias.\nmodprobe tambem carrega modulos, mas resolve e carrega automaticamente os modulos dos quais ele depende (via modules.dep).\nloadmod, kernload e probemod nao sao comandos reais do Linux."
                 },
                 {
                     "id": 32,
@@ -448,7 +448,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "cp \/boot\/initramfs \/tmp\/initramfs.gz; gunzip \/tmp\/initramfs.gz; mount \/tmp\/initramfs \/mnt\/ -o loop -t initrd"
                     },
                     "answer": "B",
-                    "explanation": "Descompacta-se o initramfs com gunzip e depois extrai-se o conteudo cpio com 'cpio -i' dentro de um diretorio."
+                    "explanation": "O initramfs geralmente esta comprimido com gzip, entao primeiro ele deve ser descompactado com gunzip.\nDepois de descompactado, o conteudo (formato cpio) e extraido com 'cpio -i', redirecionando o arquivo como entrada padrao.\nE preciso estar dentro do diretorio de destino antes de rodar o cpio, pois ele extrai no diretorio corrente."
                 },
                 {
                     "id": 33,
@@ -457,7 +457,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Após instalar um kernel compilado, ele não consegue encontrar nenhum módulo que precise ser carregado. Qual alvo do make provavelmente foi perdido ao instalar o kernel?",
                     "options": {},
                     "answer": "make modules_install, modules_install",
-                    "explanation": "make modules_install instala os modulos compilados em \/lib\/modules\/<versao>; sem ele o kernel novo nao encontra seus modulos."
+                    "explanation": "O alvo 'make modules_install' copia os modulos compilados para \/lib\/modules\/<versao-do-kernel>.\nSem esse passo, o kernel recem-instalado nao encontra nenhum modulo para carregar, mesmo tendo sido compilado com sucesso."
                 },
                 {
                     "id": 34,
@@ -466,7 +466,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "De acordo com o Filesystem Hierarchy Standard (FHS), qual é o caminho para o código-fonte do kernel Linux, podendo ser um link simbólico para o código-fonte Linux real? (Especifique o caminho completo sem informação de versão.)",
                     "options": {},
                     "answer": "\/usr\/src\/linux, \/usr\/src\/linux\/",
-                    "explanation": "Pelo FHS, o codigo-fonte do kernel fica em \/usr\/src\/linux, frequentemente um symlink para a versao real."
+                    "explanation": "O Filesystem Hierarchy Standard (FHS) define \/usr\/src\/linux como o caminho convencional para o codigo-fonte do kernel.\nNa pratica, costuma ser um link simbolico apontando para o diretorio real, que inclui a versao no nome (ex: linux-5.10)."
                 },
                 {
                     "id": 35,
@@ -475,7 +475,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual arquivo informa ao GRUB os caminhos das partições do sistema de arquivos tanto em formato Linux quanto em sintaxe GRUB? (Especifique apenas o nome do arquivo, sem informação de caminho)",
                     "options": {},
                     "answer": "device.map",
-                    "explanation": "O arquivo device.map informa ao GRUB o mapeamento entre a nomenclatura de discos do Linux e a sintaxe do GRUB."
+                    "explanation": "O arquivo device.map do GRUB (legado) mapeia os nomes de dispositivo do Linux (\/dev\/sda) para a sintaxe do GRUB (hd0).\nEle e usado principalmente pelo grub-install para saber em qual disco fisico instalar o bootloader."
                 },
                 {
                     "id": 36,
@@ -489,7 +489,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "\/etc\/rc2.d\/apache2.start"
                     },
                     "answer": "A",
-                    "explanation": "No SysV-init, \/etc\/init.d\/apache2 e o script mestre; os diretorios rcX.d contem apenas symlinks para ele."
+                    "explanation": "No SysV-init, o script mestre de cada servico fica em \/etc\/init.d\/, como \/etc\/init.d\/apache2.\nOs diretorios \/etc\/rcX.d\/ contem apenas links simbolicos (S\/K + numero + nome) que apontam de volta para esse script mestre.\nAlterar o comportamento do servico deve ser feito no script em \/etc\/init.d\/, nao nos links de runlevel."
                 },
                 {
                     "id": 37,
@@ -503,7 +503,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "A capacidade de verificar a configuração de um sistema antes de concluir o processo de boot."
                     },
                     "answer": "A",
-                    "explanation": "PXE (Preboot eXecution Environment) permite inicializar um computador pela interface de rede."
+                    "explanation": "PXE (Preboot eXecution Environment) permite que um computador seja inicializado buscando o sistema pela rede.\nE usado tipicamente para instalacoes automatizadas ou boot de terminais sem disco, dispensando midia local.\nNao tem relacao com desktop remoto (X11) nem com verificacoes de configuracao apos o boot."
                 },
                 {
                     "id": 38,
@@ -517,7 +517,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "install-lilo"
                     },
                     "answer": "A",
-                    "explanation": "O comando lilo le \/etc\/lilo.conf e instala\/atualiza o bootloader LILO."
+                    "explanation": "O comando 'lilo' le o arquivo de configuracao \/etc\/lilo.conf e grava\/atualiza o bootloader no local definido (MBR ou setor de boot).\nEle precisa ser executado sempre que \/etc\/lilo.conf mudar, pois o LILO nao le a configuracao dinamicamente no boot.\nAs demais opcoes nao sao comandos reais do LILO."
                 },
                 {
                     "id": 39,
@@ -531,7 +531,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "runlevel"
                     },
                     "answer": "B",
-                    "explanation": "Cada opcao de boot no GRUB2 comeca com a diretiva 'menuentry', que abre o bloco de configuracao daquela entrada."
+                    "explanation": "No GRUB2, cada opcao de boot disponivel no menu comeca com a diretiva 'menuentry', que abre um bloco de configuracao.\nDentro desse bloco ficam as diretivas 'linux' (kernel e parametros) e 'initrd' (imagem initramfs).\n'runlevel' nao e uma diretiva do grub.cfg; o runlevel e passado como parametro dentro da linha 'linux'."
                 },
                 {
                     "id": 40,
@@ -540,7 +540,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual é o caminho completo do diretório que contém os scripts (ou links para os scripts originais) a serem executados enquanto o sistema inicializa para o runlevel 2 do SysV-init?",
                     "options": {},
                     "answer": "\/etc\/rc2.d, \/etc\/rc2.d\/, \/etc\/init.d\/rc2.d, \/etc\/init.d\/rc2.d\/",
-                    "explanation": "Os scripts do runlevel 2 (SysV) ficam em \/etc\/rc2.d\/, geralmente symlinks para \/etc\/init.d\/."
+                    "explanation": "No SysV-init, cada runlevel tem seu proprio diretorio de scripts, nomeado \/etc\/rcN.d\/ (N = numero do runlevel).\nPara o runlevel 2, portanto, e \/etc\/rc2.d\/, contendo links simbolicos para os scripts reais em \/etc\/init.d\/."
                 },
                 {
                     "id": 41,
@@ -555,7 +555,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "No arquivo \/etc\/rc.d\/rc.local"
                     },
                     "answer": "B",
-                    "explanation": "O runlevel tambem pode ser forcado por um parametro na linha do kernel no bootloader, sobrepondo o initdefault."
+                    "explanation": "Alem do runlevel padrao definido no \/etc\/inittab (initdefault), e possivel passar um numero de runlevel como parametro de kernel no bootloader.\nEsse parametro tem precedencia sobre o valor do initdefault, sobrepondo-o durante aquele boot especifico.\nPor isso, mesmo corrigindo o inittab, o sistema pode continuar indo para outro runlevel se o bootloader estiver forcando um valor diferente."
                 },
                 {
                     "id": 42,
@@ -570,7 +570,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Porque o disco tem sua própria proteção de escrita que não pode ser alterada pelo sistema operacional."
                     },
                     "answer": "A",
-                    "explanation": "Montar root como somente-leitura no inicio permite rodar fsck com seguranca; so depois de checado ele e remontado com escrita."
+                    "explanation": "O sistema de arquivos root e montado inicialmente como somente-leitura para permitir que o fsck seja executado com seguranca.\nRodar fsck em um filesystem montado com escrita pode causar corrupcao, pois dados podem mudar durante a verificacao.\nSo depois que a integridade e confirmada, o root e remontado em modo leitura-escrita para uso normal do sistema."
                 },
                 {
                     "id": 43,
@@ -585,7 +585,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Uma mensagem de erro é exibida afirmando que o módulo do kernel correspondente não pôde ser carregado."
                     },
                     "answer": "D",
-                    "explanation": "Sem conseguir montar o root, o kernel entra em panico exibindo qual dispositivo falhou ou que o init nao foi encontrado."
+                    "explanation": "Se o kernel nao conseguir montar o sistema de arquivos root, ele entra em panico (kernel panic) e para o boot.\nA mensagem de erro exibida indica qual dispositivo nao pode ser montado ou informa que o processo init nao foi encontrado.\nNao ha um modo interativo automatico pedindo ao administrador um filesystem valido nesse ponto do boot."
                 },
                 {
                     "id": 44,
@@ -600,7 +600,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "NFS"
                     },
                     "answer": "B,D",
-                    "explanation": "PXE depende de DHCP (para obter IP e localizar o servidor) e TFTP (para baixar a imagem de boot)."
+                    "explanation": "O PXE depende do DHCP para obter um endereco IP e descobrir o servidor de boot na rede.\nDepois, ele usa TFTP para baixar o bootloader e a imagem do sistema a partir desse servidor.\nDNS, HTTP e NFS podem ser usados em etapas posteriores da instalacao, mas nao sao os protocolos centrais do PXE em si."
                 },
                 {
                     "id": 45,
@@ -614,7 +614,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Sem um kernel um sistema não pode inicializar e, dependendo do bootloader, um erro é exibido."
                     },
                     "answer": "D",
-                    "explanation": "Sem o arquivo do kernel, o sistema nao inicializa e o bootloader exibe um erro."
+                    "explanation": "Sem o arquivo do kernel, nao ha nada para o bootloader carregar e executar.\nO bootloader tentara localizar o kernel configurado e, nao encontrando, exibira uma mensagem de erro (o comportamento exato depende do bootloader).\nO sistema nao consegue prosseguir com o boot nessa situacao."
                 },
                 {
                     "id": 46,
@@ -629,7 +629,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "S99a-lpi"
                     },
                     "answer": "D",
-                    "explanation": "Na inicializacao para um runlevel, os scripts S sao executados em ordem numerica; S98lpi roda antes de S99lpi."
+                    "explanation": "Nos diretorios de runlevel do SysV-init, os scripts que iniciam servicos comecam com 'S' seguido de um numero de dois digitos.\nEsse numero define a ordem de execucao: quanto menor o numero, mais cedo o script roda.\nS98lpi (98) executa antes de S99lpi (99); os scripts 'K' (kill) sao usados ao sair do runlevel, nao ao entrar nele."
                 },
                 {
                     "id": 47,
@@ -644,7 +644,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "\/sbin\/init"
                     },
                     "answer": "A",
-                    "explanation": "Ao carregar o initramfs, o kernel executa primeiro \/init, se presente."
+                    "explanation": "Ao carregar um initramfs, o kernel procura e executa o arquivo \/init como primeiro processo, se ele existir.\n\/init e responsavel por preparar o ambiente (carregar modulos, montar o root real) antes de passar o controle ao init definitivo.\n\/linuxrc era usado no antigo initrd; nos initramfs modernos, \/init e o padrao."
                 },
                 {
                     "id": 48,
@@ -658,7 +658,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "No início do kernel."
                     },
                     "answer": "A",
-                    "explanation": "Em sistema so-Linux, o codigo do LILO fica no MBR (master boot record)."
+                    "explanation": "Quando ha apenas uma instalacao Linux e nenhum outro sistema operacional, o LILO costuma ser instalado diretamente no MBR (master boot record).\nIsso permite que o LILO assuma o controle do boot assim que o BIOS entrega a execucao para o disco."
                 },
                 {
                     "id": 49,
@@ -667,7 +667,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual palavra-chave é usada no arquivo \/etc\/inittab para definir o runlevel padrão do sistema no SysV-init?",
                     "options": {},
                     "answer": "initdefault",
-                    "explanation": "A palavra-chave initdefault na linha do \/etc\/inittab define o runlevel padrao do sistema."
+                    "explanation": "No \/etc\/inittab do SysV-init, a linha com a palavra-chave 'initdefault' define qual runlevel sera usado por padrao no boot.\nE dessa linha que o init le o runlevel-alvo antes de executar os scripts correspondentes."
                 },
                 {
                     "id": 50,
@@ -676,7 +676,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Digite o caminho completo para o principal arquivo de configuração do processo init do SysV.",
                     "options": {},
                     "answer": "\/etc\/inittab",
-                    "explanation": "O arquivo principal de configuracao do init do SysV e \/etc\/inittab."
+                    "explanation": "O \/etc\/inittab e o arquivo de configuracao principal do processo init no esquema SysV.\nNele sao definidos o runlevel padrao (initdefault) e as acoes a executar em cada runlevel."
                 },
                 {
                     "id": 51,
@@ -691,7 +691,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "reboot"
                     },
                     "answer": "B,E",
-                    "explanation": "Para sair do single user e voltar ao runlevel normal usa-se 'shutdown -r now' (reinicia) ou 'reboot'."
+                    "explanation": "Para sair do modo single user (runlevel 1) e voltar ao runlevel normal de operacao, os comandos usuais sao 'shutdown -r now' e 'reboot'.\nAmbos reiniciam o sistema, que entao sobe novamente ate o runlevel padrao configurado.\n'telinit 0' desligaria o sistema (runlevel 0) e 'shutdown -h now' tambem desliga, em vez de reiniciar."
                 },
                 {
                     "id": 52,
@@ -705,7 +705,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "-r"
                     },
                     "answer": "B",
-                    "explanation": "A opcao -f do update-rc.d forca a remocao dos symlinks em rcX.d mesmo que o script em init.d ainda exista."
+                    "explanation": "A opcao -f do update-rc.d forca a operacao mesmo quando o script correspondente ainda existe em \/etc\/init.d\/.\nSem -f, o update-rc.d normalmente se recusa a remover os links se o script de init ainda estiver presente.\nIsso e util para limpar links de runlevel de um servico que sera removido, sem apagar o script antes."
                 },
                 {
                     "id": 53,
@@ -719,7 +719,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "lost"
                     },
                     "answer": "B",
-                    "explanation": "O fsck coloca arquivos\/fragmentos sem referencia no diretorio lost+found do filesystem (ext2\/3\/4)."
+                    "explanation": "Quando o fsck encontra arquivos ou fragmentos sem nenhuma entrada de diretorio apontando para eles, ele os recupera.\nEsses arquivos orfaos sao colocados no diretorio especial lost+found, presente em cada filesystem ext2\/3\/4.\nCabe ao administrador depois inspecionar o lost+found e decidir o que fazer com o conteudo recuperado."
                 },
                 {
                     "id": 54,
@@ -733,7 +733,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Ele mantém a chave SSL para permitir autenticação com o servidor de arquivos remoto."
                     },
                     "answer": "A",
-                    "explanation": "Em \/home \/etc\/auto.home, o arquivo auto.home contem os mapas indiretos que definem o que montar sob \/home."
+                    "explanation": "Na linha '\/home \/etc\/auto.home' do auto.master, \/etc\/auto.home e um mapa indireto do autofs.\nUm mapa indireto lista, para cada chave (subdiretorio dentro de \/home), qual sistema de arquivos remoto montar sob demanda.\nEle nao guarda credenciais nem chaves; apenas as regras de montagem automatica."
                 },
                 {
                     "id": 55,
@@ -748,7 +748,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "O sistema de arquivos não requer uma verificação fsck ao ser montado."
                     },
                     "answer": "E",
-                    "explanation": "Um 0 no ultimo campo (fsck order) do \/etc\/fstab indica que o filesystem nao sera verificado pelo fsck no boot."
+                    "explanation": "O ultimo campo do \/etc\/fstab define a ordem em que o fsck verifica os sistemas de arquivos no boot.\nO valor 0 significa que aquele filesystem nao sera verificado automaticamente pelo fsck.\nValores 1 e 2 definem prioridade (1 = root, verificado primeiro; 2 = demais filesystems, verificados depois)."
                 },
                 {
                     "id": 56,
@@ -762,7 +762,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "labelfs --device \/dev\/sda1 root"
                     },
                     "answer": "B",
-                    "explanation": "tune2fs -L root \/dev\/sda1 define o label (rotulo) 'root' no filesystem ext."
+                    "explanation": "O comando tune2fs permite alterar parametros de um filesystem ext ja criado, sem reformata-lo.\nA opcao -L define o label (rotulo) do filesystem; 'tune2fs -L root \/dev\/sda1' define o label como 'root'.\nNao existem comandos 'relabel' ou 'labelfs' no Linux padrao para essa finalidade."
                 },
                 {
                     "id": 57,
@@ -771,7 +771,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual comando é usado para criar um sistema de arquivos ISO9660? (Especifique APENAS o comando, sem caminho ou parâmetros.)",
                     "options": {},
                     "answer": "mkisofs, genisoimage",
-                    "explanation": "mkisofs (ou o equivalente genisoimage) cria imagens de filesystem ISO9660."
+                    "explanation": "mkisofs (e seu sucessor genisoimage) cria imagens de filesystem no formato ISO9660, usado em CDs\/DVDs.\nE o comando padrao para gerar arquivos .iso a partir de um diretorio de conteudo."
                 },
                 {
                     "id": 58,
@@ -785,7 +785,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Tráfego Ethernet"
                     },
                     "answer": "C",
-                    "explanation": "smartd monitora a saude dos discos rigidos via S.M.A.R.T."
+                    "explanation": "O daemon smartd monitora a saude de discos rigidos que suportam a tecnologia S.M.A.R.T.\nEle le atributos internos do disco (temperatura, setores realocados, etc.) para detectar sinais de falha iminente.\nNao monitora CPU, RAM nem trafego de rede; seu escopo e exclusivamente armazenamento."
                 },
                 {
                     "id": 59,
@@ -794,7 +794,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual comando transforma um sistema de arquivos ext2 existente em ext3 de forma não destrutiva? (Especifique APENAS o comando, sem caminho ou parâmetros.)",
                     "options": {},
                     "answer": "\/sbin\/tune2fs, tune2fs",
-                    "explanation": "tune2fs (com -j) converte um ext2 em ext3 de forma nao destrutiva, adicionando o journal."
+                    "explanation": "O comando tune2fs, usado com a opcao -j, adiciona um journal a um filesystem ext2 existente, convertendo-o em ext3.\nEssa conversao e nao destrutiva: os dados existentes sao preservados, apenas o journal e adicionado."
                 },
                 {
                     "id": 60,
@@ -809,7 +809,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "mkswap \/tmp\/swapfile 512000; swapon \/tmp\/swapfile"
                     },
                     "answer": "C",
-                    "explanation": "Cria-se o arquivo com dd, formata-se como swap com mkswap e ativa-se com swapon."
+                    "explanation": "Primeiro cria-se o arquivo do tamanho desejado com dd (lendo de \/dev\/zero para preencher com zeros).\nEm seguida, mkswap formata esse arquivo com a assinatura de area de swap.\nPor fim, swapon ativa o arquivo como espaco de swap utilizavel pelo sistema; 'mount' nao se aplica a swap."
                 },
                 {
                     "id": 61,
@@ -824,7 +824,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "ponto de montagem; nome do dispositivo; tipo do sistema de arquivos; opções de montagem; dump do sistema de arquivos; ordem do fsck"
                     },
                     "answer": "B",
-                    "explanation": "Formato do \/etc\/fstab: dispositivo, ponto de montagem, tipo de FS, opcoes, dump, ordem do fsck."
+                    "explanation": "O \/etc\/fstab segue uma ordem fixa de campos: dispositivo, ponto de montagem, tipo de sistema de arquivos, opcoes, dump e ordem do fsck.\nTrocar a ordem entre ponto de montagem e tipo de filesystem, como fazem outras alternativas, tornaria a linha invalida.\nEssa mesma ordem e usada tambem em \/etc\/mtab e \/proc\/mounts."
                 },
                 {
                     "id": 62,
@@ -833,7 +833,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Após muitas operações de escrita, o administrador quer garantir que o kernel grave os buffers do sistema de arquivos no disco. Qual comando realiza isso? (Especifique APENAS o comando, sem caminho ou parâmetros.)",
                     "options": {},
                     "answer": "sync",
-                    "explanation": "O comando sync forca a gravacao dos buffers do filesystem em disco."
+                    "explanation": "O comando sync forca a gravacao imediata de todos os buffers do sistema de arquivos que ainda estao apenas em memoria para o disco.\nE util antes de desligar um sistema abruptamente ou remover midia removivel, para evitar perda ou corrupcao de dados."
                 },
                 {
                     "id": 63,
@@ -848,7 +848,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "\/proc\/devices"
                     },
                     "answer": "B,D",
-                    "explanation": "\/etc\/mtab e \/proc\/mounts sao atualizados conforme filesystems sao montados\/desmontados, refletindo o estado atual."
+                    "explanation": "\/etc\/mtab e \/proc\/mounts sao atualizados dinamicamente conforme sistemas de arquivos sao montados e desmontados.\nEles refletem o estado atual real dos pontos de montagem, ao contrario de \/etc\/fstab, que e apenas a configuracao desejada.\n\/proc\/devices lista dispositivos registrados no kernel, nao pontos de montagem."
                 },
                 {
                     "id": 64,
@@ -862,7 +862,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "autofs.master"
                     },
                     "answer": "C",
-                    "explanation": "O arquivo mestre (map principal) do autofs e o auto.master."
+                    "explanation": "O arquivo auto.master e o mapa mestre do autofs, listando quais pontos de montagem usam qual mapa (direto ou indireto).\nE a partir dele que o automount sabe onde procurar as regras detalhadas para cada ponto, como \/etc\/auto.home."
                 },
                 {
                     "id": 65,
@@ -877,7 +877,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Btrfs"
                     },
                     "answer": "A,D,E",
-                    "explanation": "ext4, XFS e Btrfs sao filesystems comuns para particao root; VFAT e NTFS nao sao adequados para root Linux."
+                    "explanation": "ext4, XFS e Btrfs sao sistemas de arquivos nativos do Linux, com suporte a permissoes Unix, journaling e recursos avancados, adequados para root.\nVFAT nao suporta permissoes Unix nem links simbolicos, o que o torna inadequado para a raiz do sistema.\nNTFS, embora suportado para leitura\/escrita via ntfs-3g, tambem nao e usado como filesystem root em instalacoes Linux."
                 },
                 {
                     "id": 66,
@@ -891,7 +891,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Ele monitora certas unidades de disco e tenta prever quando elas irão falhar."
                     },
                     "answer": "D",
-                    "explanation": "smartd monitora discos via S.M.A.R.T. e tenta prever falhas antes que ocorram."
+                    "explanation": "O smartd monitora continuamente discos com suporte a S.M.A.R.T., lendo seus atributos internos de saude.\nCom base nesses atributos, ele tenta prever falhas de disco antes que ocorram, alertando o administrador.\nEle nao repara filesystems nem decide quais processos matar; essas sao funcoes de outras ferramentas (fsck, OOM killer)."
                 },
                 {
                     "id": 67,
@@ -900,7 +900,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual palavra-chave está faltando na seguinte linha do \/etc\/fstab para tornar um dispositivo USB flash gravável pelo usuário fred quando montado:\n```\n\/dev\/sda1 \/mnt\/usbflash vfat defaults,users,______=fred,umask=022, 0 0\n```\n(Forneça apenas o nome da opção, sem quaisquer configurações)",
                     "options": {},
                     "answer": "uid",
-                    "explanation": "A opcao uid=fred no \/etc\/fstab define o dono do filesystem VFAT montado, tornando-o gravavel por fred."
+                    "explanation": "No \/etc\/fstab, a opcao uid=<usuario> define qual usuario sera o dono de todos os arquivos de um filesystem sem permissoes Unix nativas, como o VFAT.\nCombinada com 'users' (permite montagem por qualquer usuario) e 'umask', o resultado e um dispositivo gravavel por 'fred'."
                 },
                 {
                     "id": 68,
@@ -915,7 +915,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "ROM-EO"
                     },
                     "answer": "B",
-                    "explanation": "ISO9660 e o padrao de filesystem para CD-ROM."
+                    "explanation": "ISO9660 e o padrao internacional de sistema de arquivos usado em midias de CD-ROM.\nE o formato gerado por ferramentas como mkisofs\/genisoimage e o unico entre as opcoes que corresponde a um filesystem real de CD-ROM."
                 },
                 {
                     "id": 69,
@@ -924,7 +924,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Considere o seguinte arquivo \/etc\/fstab:\n```\n\/dev\/hda1 swap swap defaults 0 0\n\/dev\/hda2 \/ ext2 defaults 1 1\n\/dev\/hda3 \/home ext2 defaults 1 2\nnone \/proc proc defaults 0 0\n\/dev\/sdb1 \/media\/usb0 vfat user,noauto 0 0\n```\nQual é um dos possíveis comandos que um usuário comum (não-root) pode usar para montar a partição \/dev\/sdb1 no ponto de montagem \/media\/usb0? (Digite o comando com todos os parâmetros e\/ou opções, mas sem opções de tipo de sistema de arquivos.)",
                     "options": {},
                     "answer": "mount \/dev\/sdb1, mount \/media\/usb0, \/bin\/mount \/dev\/sdb1, \/bin\/mount \/media\/usb0, mount \/media\/usb0\/, \/bin\/mount \/media\/usb0\/",
-                    "explanation": "Como o fstab tem 'user' na linha do \/dev\/sdb1, um usuario comum monta com 'mount \/dev\/sdb1' ou 'mount \/media\/usb0'."
+                    "explanation": "Como a linha do \/etc\/fstab para \/dev\/sdb1 tem a opcao 'user', qualquer usuario comum pode montar esse dispositivo.\nPara montar, basta informar o dispositivo OU o ponto de montagem (o outro e completado a partir do fstab): 'mount \/dev\/sdb1' ou 'mount \/media\/usb0'.\nNao e necessario, nem permitido para um usuario comum, especificar opcoes extras como o tipo de filesystem."
                 },
                 {
                     "id": 70,
@@ -933,7 +933,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual diretório em \/dev\/disk\/ pode ser usado para determinar o UUID de um disco rígido conectado?",
                     "options": {},
                     "answer": "\/dev\/disk\/by-uuid, by-uuid, \/dev\/disk\/by-uuid\/",
-                    "explanation": "O diretorio \/dev\/disk\/by-uuid\/ contem symlinks nomeados pelo UUID de cada particao."
+                    "explanation": "O diretorio \/dev\/disk\/by-uuid\/ contem links simbolicos nomeados com o UUID de cada particao, apontando para o dispositivo real (ex: \/dev\/sda1).\nE a forma mais confiavel de referenciar discos no \/etc\/fstab, pois o UUID nao muda mesmo que a ordem dos dispositivos (\/dev\/sdX) mude entre boots."
                 },
                 {
                     "id": 71,
@@ -948,7 +948,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "mdadm \/dev\/md0 --offline \/dev\/sdc1"
                     },
                     "answer": "D",
-                    "explanation": "mdadm --fail \/dev\/md0 \/dev\/sdc1 marca o dispositivo como falho, simulando uma falha no array."
+                    "explanation": "O comando 'mdadm --fail <array> <dispositivo>' marca manualmente um disco como falho dentro de um array RAID.\nIsso simula uma falha real sem precisar remover fisicamente o disco, util para testar a resiliencia do array.\n--remove tira um disco ja marcado como falho do array; --zero-superblock apaga os metadados RAID de um disco, sem simular falha."
                 },
                 {
                     "id": 72,
@@ -963,7 +963,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "\/proc\/raid\/status"
                     },
                     "answer": "B",
-                    "explanation": "O arquivo \/proc\/mdstat mostra o status dos arrays RAID de software (md)."
+                    "explanation": "\/proc\/mdstat e o arquivo virtual que mostra o status em tempo real de todos os arrays RAID de software (md) ativos no sistema.\nNele aparecem informacoes como discos ativos, nivel de RAID, progresso de sincronizacao\/recuperacao e discos falhos."
                 },
                 {
                     "id": 73,
@@ -978,7 +978,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "ponto de montagem; nome do dispositivo; tipo do sistema de arquivos; opções de montagem; dump do sistema de arquivos; ordem do fsck"
                     },
                     "answer": "B",
-                    "explanation": "Formato do \/etc\/fstab: dispositivo, ponto de montagem, tipo de FS, opcoes, dump, ordem do fsck."
+                    "explanation": "O \/etc\/fstab segue uma ordem fixa de campos: dispositivo, ponto de montagem, tipo de sistema de arquivos, opcoes, dump e ordem do fsck.\nTrocar a ordem entre ponto de montagem e tipo de filesystem, como fazem outras alternativas, tornaria a linha invalida.\nEssa mesma ordem e usada tambem em \/etc\/mtab e \/proc\/mounts."
                 },
                 {
                     "id": 74,
@@ -993,7 +993,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "mkswap \/tmp\/swapfile 512000; swapon \/tmp\/swapfile"
                     },
                     "answer": "C",
-                    "explanation": "Cria-se o arquivo com dd, formata-se como swap com mkswap e ativa-se com swapon."
+                    "explanation": "Primeiro cria-se o arquivo do tamanho desejado com dd (lendo de \/dev\/zero para preencher com zeros).\nEm seguida, mkswap formata esse arquivo com a assinatura de area de swap.\nPor fim, swapon ativa o arquivo como espaco de swap utilizavel pelo sistema; 'mount' nao se aplica a swap."
                 },
                 {
                     "id": 75,
@@ -1007,7 +1007,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "lost"
                     },
                     "answer": "B",
-                    "explanation": "O fsck coloca arquivos\/fragmentos sem referencia no diretorio lost+found."
+                    "explanation": "Quando o fsck encontra arquivos ou fragmentos sem nenhuma entrada de diretorio apontando para eles, ele os recupera.\nEsses arquivos orfaos sao colocados no diretorio especial lost+found, presente em cada filesystem ext2\/3\/4.\nCabe ao administrador depois inspecionar o lost+found e decidir o que fazer com o conteudo recuperado."
                 },
                 {
                     "id": 76,
@@ -1016,7 +1016,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual comando é usado para remover um volume físico de um grupo de volumes? (Especifique APENAS o comando, sem caminho ou parâmetros.)",
                     "options": {},
                     "answer": "vgreduce, \/sbin\/vgreduce",
-                    "explanation": "vgreduce remove um volume fisico (PV) de um grupo de volumes (VG)."
+                    "explanation": "O comando vgreduce remove um ou mais volumes fisicos (PVs) de um grupo de volumes (VG) existente no LVM.\nO volume fisico removido precisa estar sem dados alocados, ou eles devem ser migrados antes (por exemplo, com pvmove)."
                 },
                 {
                     "id": 77,
@@ -1030,7 +1030,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "_netdev"
                     },
                     "answer": "D",
-                    "explanation": "A opcao _netdev no fstab adia a montagem ate a rede estar disponivel, necessaria para alvos iSCSI."
+                    "explanation": "A opcao de montagem _netdev informa ao sistema que aquele filesystem depende da rede estar disponivel.\nIsso faz o sistema adiar a tentativa de montagem ate que a rede esteja ativa, essencial para volumes remotos como iSCSI, NFS ou CIFS.\nSem essa opcao, o boot pode tentar montar o alvo antes da rede subir e falhar."
                 },
                 {
                     "id": 78,
@@ -1044,7 +1044,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "\/dev\/md1"
                     },
                     "answer": "D",
-                    "explanation": "Arrays RAID de software Linux usam a nomenclatura \/dev\/mdN, ex: \/dev\/md1."
+                    "explanation": "Arrays RAID de software criados com mdadm sao expostos como dispositivos \/dev\/mdN (ex: \/dev\/md0, \/dev\/md1).\nNenhuma das outras opcoes corresponde a nomenclatura real usada pelo subsistema md do Linux."
                 },
                 {
                     "id": 79,
@@ -1058,7 +1058,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Remontar o volume lógico."
                     },
                     "answer": "B",
-                    "explanation": "Apos aumentar o volume logico (lvresize\/lvextend), e preciso aumentar tambem o filesystem (ex: resize2fs)."
+                    "explanation": "Aumentar o tamanho de um volume logico (com lvresize\/lvextend) so expande o espaco em disco disponivel para o LV.\nO sistema de arquivos dentro dele continua com seu tamanho antigo ate ser explicitamente redimensionado (ex: resize2fs, xfs_growfs).\nSem esse passo, o espaco extra fica alocado no LV mas inacessivel para arquivos."
                 },
                 {
                     "id": 80,
@@ -1073,7 +1073,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "automatic"
                     },
                     "answer": "C,E",
-                    "explanation": "As opcoes de node.startup no iscsid.conf sao 'manual' e 'automatic'."
+                    "explanation": "No arquivo iscsid.conf, o parametro node.startup controla se uma sessao iSCSI e conectada automaticamente.\nOs valores validos sao 'automatic' (conecta no boot\/servico) e 'manual' (requer login explicito pelo administrador)."
                 },
                 {
                     "id": 81,
@@ -1087,7 +1087,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "labelfs --device \/dev\/sda1 root"
                     },
                     "answer": "B",
-                    "explanation": "tune2fs -L root \/dev\/sda1 define o label 'root' no filesystem ext4."
+                    "explanation": "O comando tune2fs permite alterar parametros de um filesystem ext ja criado, sem reformata-lo.\nA opcao -L define o label (rotulo) do filesystem; 'tune2fs -L root \/dev\/sda1' define o label como 'root'.\nNao existem comandos 'relabel' ou 'labelfs' no Linux padrao para essa finalidade."
                 },
                 {
                     "id": 82,
@@ -1102,7 +1102,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "vgcreate, mdadm"
                     },
                     "answer": "D",
-                    "explanation": "Sequencia LVM: pvcreate, vgcreate, lvcreate, mkfs, mount. Faltavam vgcreate e lvcreate."
+                    "explanation": "A sequencia padrao do LVM e: pvcreate (inicializa discos\/particoes como volumes fisicos), vgcreate (agrupa PVs em um grupo de volumes) e lvcreate (cria volumes logicos dentro do VG).\nNa sequencia da pergunta faltam justamente vgcreate e lvcreate, nessa ordem, antes de mkfs e mount."
                 },
                 {
                     "id": 83,
@@ -1117,7 +1117,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "mirrorstripe"
                     },
                     "answer": "A",
-                    "explanation": "RAID nivel 1 cria um array espelhado (mirror) no RAID de software Linux."
+                    "explanation": "RAID nivel 1 cria um array espelhado (mirror), onde os dados sao duplicados integralmente em dois ou mais discos.\nRAID5 usa paridade distribuida (nao e espelhamento) e RAID6 e semelhante ao 5, mas com paridade dupla.\n'container' e 'mirrorstripe' nao sao niveis validos de RAID de software Linux."
                 },
                 {
                     "id": 84,
@@ -1132,7 +1132,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "pvcreate, lvcreate, vgcreate, mkfs, mount"
                     },
                     "answer": "B",
-                    "explanation": "Sequencia correta: pvcreate (PV), vgcreate (VG), lvcreate (LV), mkfs e mount."
+                    "explanation": "A sequencia correta do LVM e sempre: pvcreate, vgcreate, lvcreate, seguido de mkfs (formatar) e mount (montar).\nCada etapa depende da anterior: nao e possivel criar um VG sem PVs, nem um LV sem um VG existente."
                 },
                 {
                     "id": 85,
@@ -1147,7 +1147,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "lvclone"
                     },
                     "answer": "C",
-                    "explanation": "lvcreate com a opcao -s (--snapshot) cria uma copia point-in-time do volume logico para backup."
+                    "explanation": "O comando lvcreate, usado com a opcao -s (--snapshot), cria uma copia point-in-time de um volume logico existente.\nEsse snapshot captura o estado do volume em um instante especifico, sendo muito usado para backups consistentes.\nlvsnap, lvsnapshot, lvcopy e lvclone nao sao comandos reais do LVM2."
                 },
                 {
                     "id": 86,
@@ -1156,7 +1156,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual diretório em \/dev\/disk\/ pode ser usado para determinar o UUID de um disco rígido conectado?",
                     "options": {},
                     "answer": "\/dev\/disk\/by-uuid, by-uuid, \/dev\/disk\/by-uuid\/",
-                    "explanation": "O diretorio \/dev\/disk\/by-uuid\/ contem symlinks nomeados pelo UUID de cada particao."
+                    "explanation": "O diretorio \/dev\/disk\/by-uuid\/ contem links simbolicos nomeados com o UUID de cada particao, apontando para o dispositivo real (ex: \/dev\/sda1).\nE a forma mais confiavel de referenciar discos no \/etc\/fstab, pois o UUID nao muda mesmo que a ordem dos dispositivos (\/dev\/sdX) mude entre boots."
                 },
                 {
                     "id": 87,
@@ -1170,7 +1170,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Criar um grupo de volumes que usa todo o espaço disponível em disco."
                     },
                     "answer": "B",
-                    "explanation": "vgextend adiciona volumes fisicos (PVs) a um grupo de volumes existente."
+                    "explanation": "O comando vgextend adiciona um ou mais volumes fisicos (PVs) a um grupo de volumes (VG) ja existente.\nIsso aumenta o espaco total disponivel no VG, permitindo depois criar ou estender volumes logicos."
                 },
                 {
                     "id": 88,
@@ -1185,7 +1185,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "ROM-EO"
                     },
                     "answer": "B",
-                    "explanation": "ISO9660 e o padrao de filesystem para CD-ROM."
+                    "explanation": "ISO9660 e o padrao internacional de sistema de arquivos usado em midias de CD-ROM.\nE o formato gerado por ferramentas como mkisofs\/genisoimage e o unico entre as opcoes que corresponde a um filesystem real de CD-ROM."
                 },
                 {
                     "id": 89,
@@ -1199,7 +1199,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Ele mantém a chave SSL para permitir autenticação com o servidor de arquivos remoto."
                     },
                     "answer": "A",
-                    "explanation": "Em \/home \/etc\/auto.home, o auto.home contem os mapas indiretos de montagem sob \/home."
+                    "explanation": "Na linha '\/home \/etc\/auto.home' do auto.master, \/etc\/auto.home e um mapa indireto do autofs.\nUm mapa indireto lista, para cada chave (subdiretorio dentro de \/home), qual sistema de arquivos remoto montar sob demanda.\nEle nao guarda credenciais nem chaves de servidor; apenas as regras de montagem automatica."
                 },
                 {
                     "id": 90,
@@ -1208,7 +1208,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual palavra-chave está faltando na seguinte linha do \/etc\/fstab para tornar um dispositivo USB flash gravável pelo usuário fred quando montado:\n```\n\/dev\/sda1 \/mnt\/usbflash vfat defaults,users,______=fred,umask=022, 0 0\n```\n(Forneça apenas o nome da opção, sem quaisquer configurações)",
                     "options": {},
                     "answer": "uid",
-                    "explanation": "A opcao uid=fred torna o dispositivo VFAT montado gravavel pelo usuario fred."
+                    "explanation": "No \/etc\/fstab, a opcao uid=<usuario> define qual usuario sera o dono de todos os arquivos de um filesystem sem permissoes Unix nativas, como o VFAT.\nCombinada com 'users' (permite montagem por qualquer usuario) e 'umask', o resultado e um dispositivo gravavel por 'fred'."
                 },
                 {
                     "id": 91,
@@ -1223,7 +1223,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "\/dev\/sr1"
                     },
                     "answer": "D",
-                    "explanation": "Um gravador de CD em controlador SATA aparece como dispositivo SCSI \/dev\/sr0."
+                    "explanation": "Unidades opticas (CD\/DVD) conectadas via SATA sao tratadas pelo kernel como dispositivos SCSI genericos.\nElas aparecem sob a nomenclatura \/dev\/srN, sendo \/dev\/sr0 a primeira unidade optica detectada.\n\/dev\/sdX e reservado para discos rigidos e \/dev\/hdX era usado para dispositivos IDE legados."
                 },
                 {
                     "id": 92,
@@ -1238,7 +1238,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "5"
                     },
                     "answer": "C",
-                    "explanation": "RAID5 exige no minimo 3 discos para oferecer redundancia (dados + paridade distribuida)."
+                    "explanation": "RAID5 distribui dados e informacao de paridade entre todos os discos do array.\nPara oferecer redundancia real (poder perder um disco sem perder dados), sao necessarios no minimo 3 discos.\nCom apenas 2 discos, nao ha espaco util sobrando para armazenar a paridade de forma distribuida."
                 },
                 {
                     "id": 93,
@@ -1253,7 +1253,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "hdparm -d 1 \/dev\/hda"
                     },
                     "answer": "E",
-                    "explanation": "hdparm -d 1 \/dev\/hda habilita o DMA no disco IDE."
+                    "explanation": "O comando hdparm -d permite habilitar (1) ou desabilitar (0) o modo DMA em um disco IDE.\nA sintaxe correta e 'hdparm -d 1 \/dev\/hda', aplicada ao dispositivo do disco inteiro, nao a uma particao.\n'--dma' nao e uma opcao valida do hdparm; a opcao correta e sempre '-d'."
                 },
                 {
                     "id": 94,
@@ -1267,7 +1267,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Tráfego Ethernet"
                     },
                     "answer": "C",
-                    "explanation": "smartd monitora a saude dos discos rigidos via S.M.A.R.T."
+                    "explanation": "O daemon smartd monitora a saude de discos rigidos que suportam a tecnologia S.M.A.R.T.\nEle le atributos internos do disco (temperatura, setores realocados, etc.) para detectar sinais de falha iminente.\nNao monitora CPU, RAM nem trafego de rede; seu escopo e exclusivamente armazenamento."
                 },
                 {
                     "id": 95,
@@ -1282,7 +1282,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "rdconfig"
                     },
                     "answer": "B",
-                    "explanation": "mdadm e a ferramenta para criar e gerenciar arrays RAID de software."
+                    "explanation": "mdadm e a ferramenta padrao do Linux para criar, gerenciar e monitorar arrays RAID de software (dispositivos \/dev\/mdN).\nmakerd, mkfs.raid, makeraid e rdconfig nao sao comandos reais do Linux."
                 },
                 {
                     "id": 96,
@@ -1291,7 +1291,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Executar `tcpdump -nli eth1 'tcp'` mostra a seguinte saída:\n```\n14:41:53.694538 IP 10.1.52.145.51738 > 24.215.7.162.143: Flags [.], ack 33051, win 1002, options [nop,nop,TS val 36789130 ecr 1746004159], length 0\n```\nQual é o endereço IP de origem deste pacote? (Especifique a resposta apenas em dígitos e pontos.)",
                     "options": {},
                     "answer": "10.1.52.145",
-                    "explanation": "No tcpdump, o IP de origem e o que aparece antes do '>'; aqui, 10.1.52.145."
+                    "explanation": "Na saida do tcpdump, o formato geral de cada linha e 'IP origem > IP destino: flags ...'.\nO endereco antes do sinal '>' e sempre o IP de origem do pacote capturado.\nNesse exemplo, isso corresponde a 10.1.52.145."
                 },
                 {
                     "id": 97,
@@ -1306,7 +1306,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "sshd : 192.168.1.0"
                     },
                     "answer": "A,D",
-                    "explanation": "Em hosts.allow, '192.168.1.' (com ponto final) ou '192.168.1.0\/255.255.255.0' cobrem a sub-rede \/24."
+                    "explanation": "Em \/etc\/hosts.allow, uma sub-rede pode ser expressa terminando o endereco com um ponto final (ex: '192.168.1.'), o que casa com qualquer host cujo IP comece com esse prefixo.\nTambem e valido usar a notacao IP\/mascara explicita, como '192.168.1.0\/255.255.255.0'.\nFormatos sem o ponto final ou sem a mascara (como so '192.168.1' ou '192.168.1.0') nao sao interpretados corretamente pelo tcpwrapper."
                 },
                 {
                     "id": 98,
@@ -1320,7 +1320,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "ipconfig eth0 192.168.1.2"
                     },
                     "answer": "C",
-                    "explanation": "ip addr add 192.168.1.2\/32 dev eth0 adiciona um IP secundario a interface."
+                    "explanation": "O comando 'ip addr add <ip>\/<mascara> dev <interface>' adiciona um endereco IP adicional (secundario) a uma interface que ja possui outro IP.\nA sintaxe moderna e 'ip addr add', nao 'ip add addr'.\nipconfig e um comando do Windows, e nao existe no Linux."
                 },
                 {
                     "id": 99,
@@ -1335,7 +1335,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "\/etc\/resolv.conf"
                     },
                     "answer": "B,E",
-                    "explanation": "\/etc\/hosts (tabela estatica) e \/etc\/resolv.conf (servidores DNS) sao usados na resolucao de nomes."
+                    "explanation": "\/etc\/hosts contem uma tabela estatica local de nomes para IPs, consultada antes do DNS (conforme \/etc\/nsswitch.conf).\n\/etc\/resolv.conf define quais servidores DNS (nameservers) o sistema deve consultar para resolucao de nomes.\n\/etc\/dns.conf e \/etc\/systems nao sao arquivos padrao usados para resolucao de nomes no Linux."
                 },
                 {
                     "id": 100,
@@ -1350,7 +1350,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "wget"
                     },
                     "answer": "B",
-                    "explanation": "nc (netcat) permite criar scripts de interacao com servicos TCP ou UDP."
+                    "explanation": "O comando nc (netcat) permite abrir conexoes TCP ou UDP arbitrarias e enviar\/receber dados via linha de comando ou scripts.\nE amplamente usado para testar portas, transferir dados simples e automatizar interacoes com servicos de rede.\nftp e wget sao clientes especificos de protocolo, tcpdump apenas captura trafego e strings extrai texto de binarios."
                 },
                 {
                     "id": 101,
@@ -1359,7 +1359,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "De acordo com a saída do tcpdump abaixo, qual é o endereço IP do host cliente?\n```\n02:12:40.511381 IP 192.168.246.11.1045 > 192.168.246.1.22: S 3838532429:3838532429(0) win 5840 <mss 1460,sackOK,timestamp 31325740,nop,wscale 2>\n02:12:40.511540 IP 192.168.246.1.22 > 192.168.246.11.1045: S 1209330085:1209330085(0) ack 383853 2430 win 5792 <mss 1460,sackOK,timestamp 11553457 3132574,nop,wscale 0>\n02:12:40.511755 IP 192.168.246.11.1045 > 192.168.246.1.22: . ack 1 win 1460 <nop,nop,timestamp 3132574 11553457>\n02:12:40.515122 IP 192.168.246.1.22 > 192.168.246.11.1045: P 1:26(25) ack 1 win 5792 <nop,nop,timestamp 11553460 3132574>\n02:12:40.515511 IP 192.168.246.11.1045 > 192.168.246.1.22: . ack 26 win 1460 <nop,nop,timestamp 3132578 11553460>\n02:12:40.515952 IP 192.168.246.11.1045 > 192.168.246.1.22: P 1:23(22) ack 26 win 1460 <nop,nop,timestamp 3132578 11553460>\n```",
                     "options": {},
                     "answer": "192.168.246.11",
-                    "explanation": "O host cliente e o que inicia a conexao (envia o SYN inicial); aqui, 192.168.246.11."
+                    "explanation": "Em uma conexao TCP, o cliente e quem inicia o handshake enviando o primeiro pacote com a flag SYN (S).\nNa primeira linha da captura, 192.168.246.11 envia o SYN para 192.168.246.1, portanto 192.168.246.11 e o cliente.\nO servidor responde com SYN-ACK na linha seguinte, confirmando esse papel."
                 },
                 {
                     "id": 102,
@@ -1374,7 +1374,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "both"
                     },
                     "answer": "B,D",
-                    "explanation": "As palavras-chave de direcao no tcpdump sao 'src' (origem) e 'dst' (destino), tambem combinaveis como 'src or dst'."
+                    "explanation": "As palavras-chave de direcao no filtro do tcpdump sao 'src' (pacotes vindos de um endereco\/porta) e 'dst' (pacotes destinados a um endereco\/porta).\nElas podem ser combinadas com 'or'\/'and', como em 'src or dst', para casar trafego em qualquer direcao envolvendo um host.\n'source', 'dest' e 'both' nao sao palavras-chave validas de filtro do tcpdump."
                 },
                 {
                     "id": 103,
@@ -1388,7 +1388,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "host2 não é um nome de domínio totalmente qualificado."
                     },
                     "answer": "C",
-                    "explanation": "No \/etc\/hosts o formato correto e IP seguido do nome; aqui os campos estao invertidos (nome antes do IP)."
+                    "explanation": "O formato correto de cada linha do \/etc\/hosts e: endereco IP primeiro, seguido pelo(s) nome(s) de host.\nNo exemplo, os campos estao invertidos (nome antes do IP), o que faz a resolucao de nomes falhar ou se comportar de forma inesperada.\nTer dois hosts apontando para o mesmo IP e valido e nao seria, por si so, a causa do problema."
                 },
                 {
                     "id": 104,
@@ -1397,7 +1397,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Os usuários da rede local reclamam que a resolução de nomes não é rápida o suficiente. Digite o comando, sem o caminho ou quaisquer opções, que mostra o tempo levado para resolver uma consulta DNS.",
                     "options": {},
                     "answer": "dig, time dig, time host, time nslookup",
-                    "explanation": "Prefixando com 'time' (ex: time dig) mede-se o tempo gasto para resolver a consulta DNS."
+                    "explanation": "Prefixar um comando de consulta DNS com 'time' (ex: 'time dig lpi.org') mede quanto tempo o sistema levou para executa-lo, incluindo a resolucao.\nIsso permite medir diretamente a latencia da consulta DNS, sem precisar de ferramentas adicionais.\nhost e nslookup tambem funcionam com 'time', mas dig e o mais usado para esse tipo de diagnostico."
                 },
                 {
                     "id": 105,
@@ -1412,7 +1412,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "DHCP"
                     },
                     "answer": "A",
-                    "explanation": "A porta 21 na saida indica trafego FTP (porta de controle)."
+                    "explanation": "Na saida do tcpdump, a porta 21 e a porta padrao do canal de controle do protocolo FTP.\nVer trafego envolvendo a porta 21 e, portanto, um forte indicativo de que o servico usado e o FTP.\nHTTP usaria a porta 80, SSH a 22, DNS a 53 e DHCP as portas 67\/68."
                 },
                 {
                     "id": 106,
@@ -1426,7 +1426,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "ip neigh show"
                     },
                     "answer": "A,D",
-                    "explanation": "arp e 'ip neigh show' listam os vizinhos IPv4 conhecidos, com IP e MAC."
+                    "explanation": "O comando arp exibe a tabela ARP local, com o mapeamento entre IPs e enderecos MAC ja descobertos na rede.\n'ip neigh show' e o equivalente moderno, tambem baseado no protocolo de vizinhanca (ARP para IPv4, NDP para IPv6).\nifconfig e netstat nao exibem essa tabela de vizinhos IP\/MAC."
                 },
                 {
                     "id": 107,
@@ -1441,7 +1441,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "ip route delete 10.10.1.0\/24"
                     },
                     "answer": "C,E",
-                    "explanation": "'route del -net 10.10.1.0\/24' e 'ip route delete 10.10.1.0\/24' removem a rota da tabela."
+                    "explanation": "Para remover uma rota da tabela de roteamento, os comandos classicos sao 'route del -net <rede>\/<prefixo>' (ferramenta legada net-tools) e 'ip route delete <rede>\/<prefixo>' (ferramenta moderna iproute2).\n'route del' sem '-net' nao e a sintaxe correta para remover uma rota de rede; 'ip net delete' nao existe."
                 },
                 {
                     "id": 108,
@@ -1456,7 +1456,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "hostdiscover"
                     },
                     "answer": "A",
-                    "explanation": "nmap escaneia uma rede procurando por IPs em uso (host discovery)."
+                    "explanation": "O nmap e a ferramenta padrao para escanear uma rede e descobrir quais enderecos IP estao ativos (host discovery), alem de portas e servicos abertos.\ntcpdump captura trafego passivamente, mas nao faz varredura ativa; ip gerencia configuracao de rede, nao faz scanning."
                 },
                 {
                     "id": 109,
@@ -1471,7 +1471,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "O serviço não suporta tcpwrapper."
                     },
                     "answer": "D,E",
-                    "explanation": "Uma entrada conflitante em hosts.allow (que tem precedencia) ou o servico nao suportar tcpwrapper explicam a falta de efeito do hosts.deny."
+                    "explanation": "O tcpwrapper avalia primeiro \/etc\/hosts.allow: se houver uma regra permitindo o acesso, ela tem precedencia sobre qualquer regra em hosts.deny.\nPortanto, uma entrada conflitante em hosts.allow explica por que uma regra em hosts.deny parece nao ter efeito.\nTambem e possivel que o servico simplesmente nao use a biblioteca libwrap (tcpwrapper), ignorando ambos os arquivos."
                 },
                 {
                     "id": 110,
@@ -1485,7 +1485,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "iwlist"
                     },
                     "answer": "A",
-                    "explanation": "arp lista os IPv4 e MACs que o sistema ja viu na rede local (cache ARP)."
+                    "explanation": "O comando arp lista os enderecos IPv4 e MAC dos dispositivos que o sistema ja descobriu na rede local, a partir da tabela ARP do kernel.\nifconfig mostra configuracao de interfaces, nao a tabela de vizinhos; ipadm e iwlist nao servem para esse proposito no Linux tradicional."
                 },
                 {
                     "id": 111,
@@ -1500,7 +1500,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Executar bind add nameserver 192.168.0.1."
                     },
                     "answer": "A,D",
-                    "explanation": "Adicionar 'nameserver 192.168.0.1' em \/etc\/resolv.conf e garantir 'dns' no nsswitch.conf configura o resolvedor."
+                    "explanation": "Para um cliente usar um servidor DNS especifico, o endereco desse servidor deve ser adicionado como 'nameserver 192.168.0.1' em \/etc\/resolv.conf.\nAlem disso, o \/etc\/nsswitch.conf precisa ter 'dns' listado na linha 'hosts', garantindo que o sistema realmente consulte o DNS na resolucao de nomes.\nroute e ifconfig nao configuram servidores DNS; 'bind add' nao e um comando real."
                 },
                 {
                     "id": 112,
@@ -1509,7 +1509,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual programa lista informações sobre arquivos e conexões de rede abertos por processos? (Especifique APENAS o comando, sem caminho ou parâmetros.)",
                     "options": {},
                     "answer": "lsof, \/usr\/bin\/lsof",
-                    "explanation": "lsof lista arquivos e conexoes de rede abertos pelos processos."
+                    "explanation": "lsof ('list open files') lista todos os arquivos abertos por processos, o que no Linux inclui tambem sockets de rede.\nPor isso e usado tanto para depurar arquivos travados quanto para identificar conexoes de rede abertas por um processo."
                 },
                 {
                     "id": 113,
@@ -1523,7 +1523,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Quando o host que envia o pacote ICMP é o mesmo host que o recebe."
                     },
                     "answer": "A",
-                    "explanation": "O ping mostra (DUP!) quando envia a um endereco de broadcast e varios hosts respondem, gerando respostas duplicadas."
+                    "explanation": "O ping mostra '(DUP!)' quando recebe mais de uma resposta para o mesmo pacote ICMP echo request enviado.\nIsso acontece tipicamente ao pingar um endereco de broadcast, pois varios hosts da rede respondem ao mesmo pacote.\nNao tem relacao com redes diferentes, roteadores intermediarios respondendo, ou origem e destino serem o mesmo host."
                 },
                 {
                     "id": 114,
@@ -1538,7 +1538,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "DHCP"
                     },
                     "answer": "D",
-                    "explanation": "A porta 53 e a consulta 'A?' na saida indicam trafego DNS."
+                    "explanation": "A porta 53 e a porta padrao usada pelo protocolo DNS, tanto para consultas quanto respostas.\nA notacao 'A?' na saida do tcpdump indica uma consulta de registro tipo A, tipica de resolucao de nomes.\nIsso confirma que o trafego capturado e DNS, e nao FTP, HTTP, SSH ou DHCP."
                 },
                 {
                     "id": 115,
@@ -1553,7 +1553,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "iw"
                     },
                     "answer": "A,E",
-                    "explanation": "iwconfig e iw exibem a qualidade do link da interface sem fio."
+                    "explanation": "iwconfig e a ferramenta legada para consultar e configurar parametros de interfaces sem fio, incluindo qualidade de sinal\/link.\niw e a ferramenta moderna (baseada em nl80211) que substitui o iwconfig e tambem informa qualidade de link.\niwlink, iwscan e iwifi nao sao comandos reais do conjunto wireless-tools\/iw."
                 },
                 {
                     "id": 116,
@@ -1568,7 +1568,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "route add defaultgw=192.168.0.1 if=eth0"
                     },
                     "answer": "A,C",
-                    "explanation": "'route add default gw 192.168.0.1 eth0' e 'ip route add default via 192.168.0.1 dev eth0' definem o gateway padrao."
+                    "explanation": "Para definir um gateway padrao, pode-se usar a sintaxe classica 'route add default gw <ip> <interface>' (net-tools).\nOu a sintaxe moderna 'ip route add default via <ip> dev <interface>' (iproute2), que faz a mesma coisa.\nifconfig e resolv.conf nao servem para configurar rotas ou gateway."
                 },
                 {
                     "id": 117,
@@ -1582,7 +1582,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Executar o comando syslogd -u."
                     },
                     "answer": "B,C",
-                    "explanation": "Apos editar a config do syslogd, envia-se o sinal HUP ou reinicia-se o servico para recarregar."
+                    "explanation": "Depois de editar a configuracao do syslogd, as mudancas so entram em vigor apos o processo reler o arquivo.\nIsso pode ser feito enviando o sinal HUP ao processo (recarrega a configuracao sem reiniciar completamente) ou reiniciando o servico.\nO syslogd nao detecta mudancas automaticamente nem tem uma opcao '-u' para isso."
                 },
                 {
                     "id": 118,
@@ -1597,7 +1597,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "\/var\/log"
                     },
                     "answer": "D",
-                    "explanation": "\/proc e um filesystem virtual em memoria; nao deve ser incluido em backup."
+                    "explanation": "\/proc e um sistema de arquivos virtual, gerado dinamicamente pelo kernel em memoria, representando processos e informacoes do sistema.\nEle nao contem dados persistentes reais em disco, entao incluir \/proc em um backup e inutil (e pode ate causar erros de leitura).\n\/etc, \/opt e \/var\/log contem configuracoes, aplicacoes e logs reais que fazem sentido proteger."
                 },
                 {
                     "id": 119,
@@ -1611,7 +1611,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "umount \/dev\/sdb3"
                     },
                     "answer": "B",
-                    "explanation": "dd if=\/dev\/zero of=\/dev\/sdb3 sobrescreve a particao com zeros, apagando seu conteudo."
+                    "explanation": "'dd if=\/dev\/zero of=\/dev\/sdb3' le zeros da fonte especial \/dev\/zero e os grava sobre a particao de destino.\nIsso sobrescreve todo o conteudo anterior da particao com zeros, apagando os dados de forma eficaz.\nA ordem invertida de if\/of (opcao C) gravaria a particao dentro de \/dev\/zero, o que nao faz sentido e nao apaga nada."
                 },
                 {
                     "id": 120,
@@ -1625,7 +1625,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "rsync -a -e ssh fyf\/ kevin@deltaur:\/var\/tmp\/"
                     },
                     "answer": "D",
-                    "explanation": "rsync -a -e ssh fyf\/ kevin@deltaur:\/var\/tmp\/ copia o diretorio local para o host remoto via SSH."
+                    "explanation": "rsync -a preserva permissoes, timestamps, links e outros atributos durante a copia (modo arquivo).\n-e ssh define que o transporte sera feito via SSH, cifrando a conexao com o host remoto.\nA sintaxe correta e origem seguida de destino: 'fyf\/ kevin@deltaur:\/var\/tmp\/', com o usuario remoto antes do host, separado por '@'."
                 },
                 {
                     "id": 121,
@@ -1640,7 +1640,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Makefile.in"
                     },
                     "answer": "C,D",
-                    "explanation": "O GNU make procura por 'makefile' ou 'Makefile' no diretorio atual, se nenhum for especificado."
+                    "explanation": "Na ausencia de um Makefile especificado na linha de comando, o GNU make procura por arquivos chamados 'makefile' ou 'Makefile' no diretorio atual.\nconfigure, config.h.in e Makefile.in fazem parte do processo do autoconf, mas nao sao os arquivos que o make procura por padrao."
                 },
                 {
                     "id": 122,
@@ -1649,7 +1649,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual arquivo contém a mensagem exibida acima do prompt de login do console do sistema? (Especifique o nome completo do arquivo, incluindo o caminho.)",
                     "options": {},
                     "answer": "\/etc\/issue",
-                    "explanation": "A mensagem exibida acima do prompt de login no console fica em \/etc\/issue."
+                    "explanation": "O arquivo \/etc\/issue contem o texto exibido no console antes do prompt de login, geralmente com informacoes da distribuicao.\nE diferente do \/etc\/motd, que e exibido somente apos um login bem-sucedido."
                 },
                 {
                     "id": 123,
@@ -1663,7 +1663,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "O conteúdo de \/opt terá conteúdo adicional adicionado a partir do próximo arquivo na fita."
                     },
                     "answer": "D",
-                    "explanation": "Fitas nao rebobinadas avancam para o proximo arquivo; rodar de novo adiciona o conteudo do proximo arquivo da fita."
+                    "explanation": "Ao usar um dispositivo de fita sem rebobinamento automatico (como \/dev\/nst0), a fita nao volta ao inicio apos cada operacao.\nIsso faz com que o cabecote avance para a posicao seguinte na fita apos a leitura.\nExecutar o mesmo comando de novo le o proximo arquivo da fita, adicionando (nao substituindo) esse conteudo ao destino."
                 },
                 {
                     "id": 124,
@@ -1677,7 +1677,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "prefix, exec_prefix, bindir, mandir"
                     },
                     "answer": "B",
-                    "explanation": "Alvos (targets) comuns em makefiles de codigo-fonte sao clean, install e uninstall."
+                    "explanation": "Makefiles de pacotes de codigo-fonte costumam definir alvos padronizados para tarefas comuns de instalacao.\n'install' copia os binarios\/arquivos compilados para os diretorios do sistema; 'uninstall' reverte a instalacao; 'clean' remove arquivos gerados pela compilacao.\nCFLAGS, LDFLAGS, prefix e bindir sao variaveis de configuracao, nao alvos (targets) do make."
                 },
                 {
                     "id": 125,
@@ -1692,7 +1692,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "SARcheck"
                     },
                     "answer": "A,B",
-                    "explanation": "Amanda e Bacula sao sistemas de backup comuns no Linux."
+                    "explanation": "Amanda e Bacula sao sistemas de backup open source amplamente usados em ambientes Linux, com suporte a backup em rede, agendamento e gerenciamento de midia.\nDrBackup, BREWBackup e SARcheck nao sao ferramentas reais de backup do ecossistema Linux."
                 },
                 {
                     "id": 126,
@@ -1701,7 +1701,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual é o nome do dispositivo para a primeira unidade de fita SCSI em um sistema quando usada sem rebobinamento automático após cada operação de escrita? (Especifique o caminho completo para o dispositivo.)",
                     "options": {},
                     "answer": "\/dev\/nst0",
-                    "explanation": "A primeira fita SCSI sem rebobinamento automatico e \/dev\/nst0 (o 'n' indica no-rewind)."
+                    "explanation": "Dispositivos de fita SCSI seguem uma convencao de nomes onde o prefixo 'n' indica 'no-rewind' (sem rebobinamento automatico).\n\/dev\/st0 seria a primeira unidade com rebobinamento automatico apos cada operacao; \/dev\/nst0 e a mesma unidade, mas sem esse rebobinamento."
                 },
                 {
                     "id": 127,
@@ -1716,7 +1716,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Executar make install_local para instalar em \/usr\/local\/."
                     },
                     "answer": "B,D",
-                    "explanation": "A instalacao falha por falta de permissao; solucoes: rodar 'make install' como root ou usar --prefix num diretorio gravavel."
+                    "explanation": "A falha de 'make install' apos um '.\/configure && make' bem-sucedido geralmente ocorre por falta de permissao para escrever nos diretorios padrao do sistema (ex: \/usr\/local).\nRodar 'make install' com privilegios de root resolve o problema de permissao diretamente.\nAlternativamente, reconfigurar com '--prefix' apontando para um diretorio onde o usuario tenha permissao de escrita evita a necessidade de root."
                 },
                 {
                     "id": 128,
@@ -1725,7 +1725,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual arquivo contém a mensagem de texto exibida após o login no console? (Especifique o nome completo do arquivo, incluindo o caminho.)",
                     "options": {},
                     "answer": "\/etc\/motd",
-                    "explanation": "A mensagem exibida apos o login no console fica em \/etc\/motd (message of the day)."
+                    "explanation": "O arquivo \/etc\/motd ('message of the day') contem o texto exibido logo apos um login bem-sucedido no console.\nDifere do \/etc\/issue, que aparece antes do login, no prompt."
                 },
                 {
                     "id": 129,
@@ -1740,7 +1740,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Instrui o patch a se conformar mais estritamente ao padrão POSIX."
                     },
                     "answer": "A",
-                    "explanation": "A opcao -p3 do patch remove os tres primeiros niveis de diretorio dos caminhos citados no arquivo de patch."
+                    "explanation": "A opcao -pN do comando patch remove N niveis de diretorio dos caminhos de arquivo citados no arquivo de patch antes de aplica-lo.\nCom -p3, os tres primeiros componentes de caminho (separados por '\/') sao descartados ao localizar o arquivo a ser corrigido.\nIsso e necessario quando a estrutura de diretorios do patch nao corresponde exatamente a estrutura local."
                 },
                 {
                     "id": 130,
@@ -1755,7 +1755,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "modshow –p dummy"
                     },
                     "answer": "A",
-                    "explanation": "modprobe -i (ou modinfo) revela o caminho fisico do modulo; aqui a alternativa correta e modprobe."
+                    "explanation": "Segundo o gabarito desta questao, 'modprobe -i dummy' e usado para revelar o caminho fisico do modulo.\nVale registrar que, na pratica, o comando mais comumente documentado para essa tarefa e 'modinfo -n dummy', que imprime o caminho do arquivo .ko do modulo.\nmodpath, depmod -n e modshow nao sao ferramentas\/opcoes reais para essa finalidade.\nSe tiver duvida na prova real, associe 'modinfo' a consultar metadados de um modulo (autor, descricao, caminho, dependencias)."
                 },
                 {
                     "id": 131,
@@ -1770,7 +1770,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Atualizar o hardware para aumentar a quantidade de RAM disponível e evitar o uso de swap"
                     },
                     "answer": "C,E",
-                    "explanation": "Com RAM crescendo e swap quase ocioso, o certo e aumentar a RAM e\/ou adicionar um servidor de aplicacao para distribuir a carga."
+                    "explanation": "Com a RAM crescendo (65% para 75%) e o swap quase ocioso, o gargalo real e a memoria RAM, nao o disco.\nAtualizar o hardware para aumentar a RAM disponivel reduz diretamente a pressao de memoria e adia a necessidade de usar swap.\nAdicionar um servidor de aplicacao extra distribui a carga entre mais maquinas, absorvendo o crescimento esperado de usuarios.\nEsperar o swap ser usado (A) arriscaria degradar o desempenho antes de agir; RAID no swap (B) e RAM disk (D) nao resolvem o problema de capacidade."
                 },
                 {
                     "id": 132,
@@ -1785,7 +1785,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Número de portas TCP usadas"
                     },
                     "answer": "A,C",
-                    "explanation": "Para medir a qualidade de um link deve-se registrar a largura de banda em ambas direcoes e a latencia efetiva."
+                    "explanation": "Para avaliar a qualidade de um link de rede, e essencial registrar a largura de banda disponivel em ambas as direcoes (upload\/download).\nA latencia efetiva (tempo de resposta) tambem e um indicador direto da qualidade percebida do link.\nNumero de nos, de pacotes IPv4\/IPv6 ou de portas TCP usadas nao medem diretamente a qualidade do link em si."
                 },
                 {
                     "id": 133,
@@ -1800,7 +1800,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Usar patch para aplicar o arquivo de patch descompactado ao diretório de código-fonte de qualquer versão anterior do kernel"
                     },
                     "answer": "D,E",
-                    "explanation": "Descompacta-se o patch com xz e aplica-se com patch ao diretorio da versao imediatamente anterior."
+                    "explanation": "O arquivo baixado (patch-4.6.4.xz) esta comprimido com xz, entao primeiro deve ser descompactado com essa mesma ferramenta.\nDepois, o utilitario 'patch' aplica o arquivo de patch descompactado ao codigo-fonte.\nUm patch incremental disponibilizado no kernel.org e sempre relativo a versao imediatamente anterior (aqui, 4.6.3), nao a qualquer versao antiga."
                 },
                 {
                     "id": 134,
@@ -1809,7 +1809,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual comando descarta blocos não usados em um sistema de arquivos montado para dar suporte a dispositivos SSD? (Especifique APENAS o comando, sem caminho ou parâmetros.)",
                     "options": {},
                     "answer": "fstrim",
-                    "explanation": "fstrim descarta blocos nao usados em um FS montado, importante para o desempenho de SSDs (TRIM)."
+                    "explanation": "fstrim descarta (envia o comando TRIM para) blocos que nao estao mais em uso em um sistema de arquivos montado.\nIsso e importante para SSDs, pois ajuda o controlador do disco a gerenciar melhor os blocos livres e manter o desempenho de escrita.\nDiferente de discos rigidos magneticos, SSDs se beneficiam de saber quais blocos estao logicamente livres."
                 },
                 {
                     "id": 135,
@@ -1818,7 +1818,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual diretório contém os arquivos de unidade systemd específicos do sistema? (Especifique o caminho completo para o diretório.)",
                     "options": {},
                     "answer": "\/lib\/systemd\/system",
-                    "explanation": "Os arquivos de unidade systemd distribuidos pelo sistema ficam em \/lib\/systemd\/system."
+                    "explanation": "As unidades systemd fornecidas pelo sistema (pacotes instalados pela distribuicao) ficam em \/lib\/systemd\/system.\nUnidades customizadas pelo administrador geralmente ficam em \/etc\/systemd\/system, que tem precedencia sobre as do \/lib."
                 },
                 {
                     "id": 136,
@@ -1832,7 +1832,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Ele cria um ram disk para armazenar dados voláteis para diretórios como \/tmp para reduzir gravações no disco"
                     },
                     "answer": "A",
-                    "explanation": "O initramfs carrega modulos essenciais e inicia subsistemas (ex: LVM) para tornar o root acessivel ao kernel."
+                    "explanation": "O initramfs e um pequeno sistema de arquivos temporario carregado na RAM logo no inicio do boot.\nSua funcao e carregar os modulos de kernel necessarios (drivers de disco, RAID, LVM etc.) para tornar o filesystem root real acessivel.\nSo depois que o root real esta pronto para ser montado, o controle e passado ao init definitivo."
                 },
                 {
                     "id": 137,
@@ -1846,7 +1846,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "O sistema deve ser reiniciado, pois o initramfs se reconfigura para o novo kernel durante a inicialização do sistema"
                     },
                     "answer": "C",
-                    "explanation": "Compilar um novo kernel gera um novo initramfs automaticamente; ele so precisa ser instalado."
+                    "explanation": "Ao compilar e instalar um novo kernel, o processo de build tipicamente gera automaticamente um novo initramfs correspondente aquele kernel.\nComo o initramfs contem modulos e ferramentas especificas da versao do kernel, ele nao pode ser simplesmente reaproveitado do kernel antigo.\nApos gerado, esse initramfs so precisa ser instalado (copiado para \/boot) e referenciado no bootloader."
                 },
                 {
                     "id": 138,
@@ -1861,7 +1861,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "efibootedit"
                     },
                     "answer": "D",
-                    "explanation": "efibootmgr e a aplicacao em espaco de usuario que modifica as entradas de boot EFI."
+                    "explanation": "efibootmgr e a ferramenta em espaco de usuario usada para consultar e modificar as entradas de boot armazenadas na NVRAM do firmware EFI.\nCom ela e possivel adicionar, remover ou reordenar entradas de boot UEFI a partir do Linux."
                 },
                 {
                     "id": 139,
@@ -1876,7 +1876,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "ipv6"
                     },
                     "answer": "A,C,D",
-                    "explanation": "Palavras-chave validas de filtro do tcpdump para um IP sao host, src e dst."
+                    "explanation": "Para filtrar trafego relacionado a um endereco IP especifico, o tcpdump aceita as palavras-chave 'host' (qualquer direcao), 'src' (origem) e 'dst' (destino).\n'ip' e 'ipv6' filtram por versao do protocolo, nao por um endereco especifico, entao nao se encaixam no espaco em branco da pergunta."
                 },
                 {
                     "id": 140,
@@ -1891,7 +1891,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "luksShow"
                     },
                     "answer": "A",
-                    "explanation": "cryptsetup luksDump mostra as informacoes de cabecalho de uma particao LUKS criptografada."
+                    "explanation": "O subcomando 'cryptsetup luksDump' exibe informacoes do cabecalho de uma particao LUKS, como slots de chave e algoritmo de cifragem.\nluksInfo, luksDebug, luksLS e luksShow nao sao subcomandos reais do cryptsetup."
                 },
                 {
                     "id": 141,
@@ -1906,7 +1906,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "A rota padrão com o menor valor de métrica"
                     },
                     "answer": "E",
-                    "explanation": "Entre varias rotas padrao, a de menor metrica (metric) e a preferida."
+                    "explanation": "Quando existem multiplas rotas padrao possiveis, o kernel escolhe a que tiver o menor valor de metrica.\nA metrica funciona como um 'custo': quanto menor, mais preferida e a rota.\nMTU e TTL nao sao usados para decidir entre rotas padrao concorrentes."
                 },
                 {
                     "id": 142,
@@ -1920,7 +1920,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "\/etc\/service.allow e \/etc\/service.deny"
                     },
                     "answer": "C",
-                    "explanation": "O tcpwrapper usa os arquivos \/etc\/hosts.allow e \/etc\/hosts.deny."
+                    "explanation": "O tcpwrapper (libwrap) controla acesso a servicos usando dois arquivos de configuracao: \/etc\/hosts.allow (regras de permissao) e \/etc\/hosts.deny (regras de bloqueio).\nhosts.allow e avaliado primeiro; se nenhuma regra casar em nenhum dos dois arquivos, o acesso e permitido por padrao."
                 },
                 {
                     "id": 143,
@@ -1929,7 +1929,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual comando garante que os sistemas de arquivos sejam gravados no disco após muitas operações de escrita? (Especifique APENAS o comando, sem caminho ou parâmetros.)",
                     "options": {},
                     "answer": "sync",
-                    "explanation": "O comando sync grava os buffers do filesystem em disco."
+                    "explanation": "O comando sync forca a gravacao imediata de todos os buffers do sistema de arquivos que ainda estao apenas em memoria para o disco.\nE util antes de desligar um sistema abruptamente ou remover midia removivel, para evitar perda ou corrupcao de dados."
                 },
                 {
                     "id": 144,
@@ -1944,7 +1944,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "lvsnapshot"
                     },
                     "answer": "B",
-                    "explanation": "lvcreate com -s cria um snapshot: copia point-in-time que ainda permite atualizar o volume original."
+                    "explanation": "O comando lvcreate, com a opcao -s (--snapshot), cria uma copia point-in-time de um volume logico.\nO volume logico original continua acessivel e pode ser atualizado normalmente enquanto o snapshot existe, capturando apenas as diferencas (copy-on-write).\nlvcclone, lvm2, lvsnap e lvsnapshot nao sao comandos reais do LVM2."
                 },
                 {
                     "id": 145,
@@ -1959,7 +1959,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "btrfs subvolume create \/mnt\/volume"
                     },
                     "answer": "E",
-                    "explanation": "btrfs subvolume create \/mnt\/volume cria um subvolume Btrfs chamado volume em \/mnt."
+                    "explanation": "O comando 'btrfs subvolume create <caminho>' cria um novo subvolume Btrfs no caminho especificado.\nA sintaxe correta usa o caminho completo do subvolume desejado apos o subcomando 'create', como em 'btrfs subvolume create \/mnt\/volume'.\nAs demais alternativas usam sintaxes ou subcomandos que nao existem no btrfs-progs."
                 },
                 {
                     "id": 146,
@@ -1974,7 +1974,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "A informação [3\/2] significa que 3 discos RAID pertencem ao array e 2 discos são sobressalentes. Juntos, eles equivalem ao número de discos disponíveis"
                     },
                     "answer": "A,C",
-                    "explanation": "Em \/proc\/mdstat, um disco falho sendo substituido por spare indica recuperacao; [UU_] indica um disco faltando (nao totalmente redundante)."
+                    "explanation": "Em \/proc\/mdstat, quando um disco falho e substituido por um disco sobressalente (spare), o array entra em processo de reconstrucao para restaurar a redundancia total.\nA notacao como '[UU_]' mostra o estado de cada disco no array: 'U' indica disco ativo (up) e '_' indica um disco ausente\/falho, ou seja, o array nao esta totalmente redundante.\nMetadados versao 1.2 nao tem relacao com compatibilidade de LILO\/GRUB Legacy; e '[3\/2]' indicaria 3 discos esperados contra 2 atualmente ativos, nao discos sobressalentes."
                 },
                 {
                     "id": 147,
@@ -1988,7 +1988,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "iwlist"
                     },
                     "answer": "A",
-                    "explanation": "arp lista os IPv4 e MACs dos nos vistos nas redes diretamente conectadas."
+                    "explanation": "O comando arp lista os enderecos IPv4 e MAC dos nos vistos nas redes IP diretamente conectadas, a partir da tabela ARP do kernel.\nifconfig mostra configuracao de interfaces, nao a tabela de vizinhos; ipadm e iwlist nao servem para esse proposito no Linux tradicional."
                 },
                 {
                     "id": 148,
@@ -2002,7 +2002,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "umount \/dev\/sdb3"
                     },
                     "answer": "B",
-                    "explanation": "dd if=\/dev\/zero of=\/dev\/sdb3 zera a particao, apagando seu conteudo."
+                    "explanation": "'dd if=\/dev\/zero of=\/dev\/sdb3' le zeros da fonte especial \/dev\/zero e os grava sobre a particao de destino.\nIsso sobrescreve todo o conteudo anterior da particao com zeros, apagando os dados de forma eficaz.\nA ordem invertida de if\/of (opcao C) gravaria a particao dentro de \/dev\/zero, o que nao faz sentido e nao apaga nada."
                 },
                 {
                     "id": 149,
@@ -2017,7 +2017,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "Terabit por segundo"
                     },
                     "answer": "C",
-                    "explanation": "Na saida de sar -b, tps significa 'transfers per second' (transferencias de I\/O por segundo)."
+                    "explanation": "Na saida de 'sar -b', a coluna tps significa 'transfers per second': o numero de transferencias de I\/O (leitura+escrita) por segundo nos dispositivos de bloco.\nNao se refere a uma taxa de dados em bytes, mas ao numero de operacoes de I\/O realizadas."
                 },
                 {
                     "id": 150,
@@ -2026,7 +2026,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual comando é usado para enviar mensagens a todos os usuários atualmente conectados? (Especifique APENAS o comando, sem caminho ou parâmetros.)",
                     "options": {},
                     "answer": "wall",
-                    "explanation": "O comando wall envia uma mensagem a todos os usuarios logados."
+                    "explanation": "O comando wall envia uma mensagem para os terminais de todos os usuarios atualmente conectados ao sistema.\nE util para avisos administrativos, como manutencao programada ou desligamento iminente do sistema."
                 },
                 {
                     "id": 151,
@@ -2041,7 +2041,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "ip addr add -6 2001:db8::1337\/64 dev eth0"
                     },
                     "answer": "D",
-                    "explanation": "ip -6 addr add ... dev eth0 adiciona um endereco IPv6 estatico a interface (a sintaxe exata da alternativa correta inclui 'new')."
+                    "explanation": "Para configurar enderecos IPv6, a ferramenta iproute2 usa a opcao '-6' para trabalhar no dominio IPv6, junto com o subcomando 'addr add'.\nA sintaxe geral e 'ip -6 addr add <endereco>\/<prefixo> dev <interface>'.\n'ip add addr' (sem o '-6' e com os subcomandos invertidos) nao e uma sintaxe valida do comando ip."
                 },
                 {
                     "id": 152,
@@ -2056,7 +2056,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "launchd"
                     },
                     "answer": "A",
-                    "explanation": "Entre os sistemas de init listados, o systemd traz seu proprio bootloader UEFI (systemd-boot)."
+                    "explanation": "Entre os sistemas de init listados, o systemd e o unico que traz seu proprio bootloader UEFI, chamado systemd-boot (antigo gummiboot).\nSysVinit, Upstart e OpenRC nao incluem um bootloader proprio; launchd e o init do macOS, nao do Linux."
                 },
                 {
                     "id": 153,
@@ -2071,7 +2071,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "systemctl reboot"
                     },
                     "answer": "A,B",
-                    "explanation": "De rescue.target volta-se ao alvo normal com 'systemctl default' (telinit 0 tambem consta como resposta do exame)."
+                    "explanation": "Para sair do rescue.target (equivalente ao single user do SysV) e retornar ao alvo normal no systemd, usa-se 'systemctl default', que troca para o target padrao do sistema.\n'telinit 0' tambem consta como resposta valida do exame, embora em ambientes systemd puros ele leve ao desligamento (o systemd mapeia telinit por compatibilidade).\nsystemctl emergency levaria a um modo ainda mais restrito, nao ao normal."
                 },
                 {
                     "id": 154,
@@ -2086,7 +2086,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "iw phy0 show"
                     },
                     "answer": "A",
-                    "explanation": "iw phy phyN info mostra as capacidades e frequencias suportadas da interface sem fio."
+                    "explanation": "O comando 'iw phy <nome> info' mostra as capacidades detalhadas do radio fisico (phy) de uma interface sem fio, incluindo frequencias e taxas suportadas.\n'iw dev <interface> info\/show' mostra informacoes da interface logica (canal atual, modo), nao todas as capacidades do hardware."
                 },
                 {
                     "id": 155,
@@ -2101,7 +2101,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "sarcron"
                     },
                     "answer": "A",
-                    "explanation": "sa1 e chamado periodicamente pelo cron para coletar dados do sar em binario."
+                    "explanation": "O comando sa1 e chamado periodicamente via cron (geralmente a cada 10 minutos) para coletar amostras de atividade do sistema em formato binario, usadas pelo sar.\nE parte do pacote sysstat, junto com sa2 (que gera relatorios diarios) e sadf (que formata os dados coletados)."
                 },
                 {
                     "id": 156,
@@ -2115,7 +2115,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "É usada pelo comando mount ao usar o systemd para montar e desmontar sistemas de arquivos"
                     },
                     "answer": "A",
-                    "explanation": "Uma unidade de montagem do systemd, usada por systemd-mount, permite montar particoes em pontos de montagem escolhidos."
+                    "explanation": "Uma unidade de montagem (.mount) do systemd descreve um ponto de montagem gerenciado pelo systemd, podendo ser criada manualmente ou a partir do \/etc\/fstab.\nEla e usada pelo comando systemd-mount, que permite montar sistemas de arquivos (locais ou de rede) em pontos de montagem escolhidos dinamicamente, nao apenas os fixados no fstab."
                 },
                 {
                     "id": 157,
@@ -2130,7 +2130,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "\/sys\/proc\/"
                     },
                     "answer": "C",
-                    "explanation": "sysctl altera parametros do kernel escrevendo na arvore \/proc\/sys\/."
+                    "explanation": "O comando sysctl le e grava parametros do kernel diretamente na arvore de arquivos virtuais \/proc\/sys\/.\nCada parametro do kernel corresponde a um arquivo dentro dessa arvore (ex: kernel.shmmax vira \/proc\/sys\/kernel\/shmmax)."
                 },
                 {
                     "id": 158,
@@ -2145,7 +2145,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "grub-mbr-setup"
                     },
                     "answer": "A",
-                    "explanation": "grub-install instala o GRUB no MBR (ou no dispositivo de boot)."
+                    "explanation": "O comando grub-install grava o codigo do bootloader GRUB no master boot record (ou em outro dispositivo de boot especificado) e instala os modulos necessarios.\ngrub-mkconfig apenas gera o arquivo grub.cfg com as entradas de menu, sem instalar o codigo de boot em si."
                 },
                 {
                     "id": 159,
@@ -2160,7 +2160,7 @@ const EXAMS_DATA_STATIC = {
                         "E": "tar xvzf lpifiles.tar.gz --globbing '*lpi*'"
                     },
                     "answer": "A",
-                    "explanation": "tar xvzf ... --wildcards '*lpi*' extrai apenas os arquivos cujo nome contem 'lpi'."
+                    "explanation": "A opcao '--wildcards' do tar permite usar padroes de shell (como '*lpi*') para selecionar quais arquivos extrair de um archive.\nCombinada com 'x' (extract), 'v' (verbose), 'z' (gzip) e 'f' (arquivo), o comando extrai apenas os arquivos cujo nome contem 'lpi'.\n'--deep', '--subdirs' e '--globbing' nao sao opcoes reais do GNU tar."
                 },
                 {
                     "id": 160,
@@ -2169,7 +2169,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Qual é o principal arquivo de configuração para o processo init do SystemV? (Especifique o nome completo do arquivo, incluindo o caminho.)",
                     "options": {},
                     "answer": "\/etc\/inittab",
-                    "explanation": "O arquivo principal de configuracao do init do SystemV e \/etc\/inittab."
+                    "explanation": "O \/etc\/inittab e o arquivo de configuracao principal do processo init no esquema SystemV.\nNele sao definidos o runlevel padrao (initdefault) e as acoes a executar em cada runlevel."
                 },
                 {
                     "id": 161,
@@ -2183,7 +2183,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "Ela forçará a remoção de links simbólicos em \/etc\/rcX.d\/ mesmo que o script de init correspondente ainda exista em \/etc\/init.d\/"
                     },
                     "answer": "D",
-                    "explanation": "A opcao -f do update-rc.d forca a remocao dos symlinks em rcX.d mesmo que o init script ainda exista em init.d."
+                    "explanation": "A opcao -f do update-rc.d forca a remocao dos links simbolicos nos diretorios \/etc\/rcX.d\/, mesmo que o script correspondente ainda exista em \/etc\/init.d\/.\nSem essa opcao, o update-rc.d normalmente se recusaria a remover os links enquanto o script de init ainda estivesse presente, evitando links orfaos por acidente.\nEla nao apaga o script em \/etc\/init.d\/ nem atualiza informacoes de pacotes; apenas os links de runlevel sao afetados."
                 }
             ]
         },
@@ -2204,7 +2204,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "id"
                     },
                     "answer": "A",
-                    "explanation": "O comando hostname exibe (ou define) o nome do host da maquina."
+                    "explanation": "O comando hostname exibe (sem argumentos) o nome do host configurado no sistema.\nUsado com um argumento, ele tambem pode definir um novo nome de host temporariamente (ate o proximo boot).\nwhoami mostra o usuario logado, uname -a mostra informacoes do kernel e id mostra UID\/GID; nenhum retorna o hostname."
                 },
                 {
                     "id": 2,
@@ -2218,7 +2218,7 @@ const EXAMS_DATA_STATIC = {
                         "D": "chmod"
                     },
                     "answer": "A,B",
-                    "explanation": "free mostra memoria livre\/usada; vmstat mostra memoria, paginacao e I\/O."
+                    "explanation": "free mostra um resumo de memoria RAM e swap: total, usada, livre, buffers e cache.\nvmstat tambem reporta memoria, alem de estatisticas de paginacao (swap) e I\/O em uma unica saida.\npasswd gerencia senhas de usuarios e chmod altera permissoes de arquivos; nenhum dos dois exibe uso de memoria."
                 },
                 {
                     "id": 3,
@@ -2227,7 +2227,7 @@ const EXAMS_DATA_STATIC = {
                     "question": "Informe o caminho completo do arquivo que define os pontos de montagem carregados no boot.",
                     "options": {},
                     "answer": "\/etc\/fstab",
-                    "explanation": "O \/etc\/fstab lista os sistemas de arquivos e suas opcoes de montagem no boot."
+                    "explanation": "O arquivo \/etc\/fstab lista os sistemas de arquivos que devem ser montados automaticamente durante o boot.\nCada linha define o dispositivo, o ponto de montagem, o tipo de filesystem, as opcoes de montagem, e os campos de dump e ordem do fsck.\nE consultado tanto pelo processo de boot quanto pelo comando mount quando usado sem todos os parametros."
                 }
             ]
         }
