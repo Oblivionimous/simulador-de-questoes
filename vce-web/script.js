@@ -731,15 +731,19 @@ function bindExamEvents() {
   el('btnEnd').addEventListener('click', endExam);
   el('btnBackToSetup').addEventListener('click', () => {
     if (confirm('Voltar ao menu inicial? (salve sua sessao antes se quiser manter o progresso)')) {
-      clearInterval(timerInterval);
-      el('examScreen').style.display = 'none';
-      el('setupScreen').style.display = 'block';
-      refreshExamMeta();
+      returnToSetup();
     }
   });
 
   // Score report buttons
-  el('closeReport').addEventListener('click', () => { el('reportOverlay').style.display='none'; });
+  // "Fechar" fecha o relatorio e volta para a tela inicial.
+  el('closeReport').addEventListener('click', () => {
+    el('reportOverlay').style.display = 'none';
+    returnToSetup();
+  });
+  // "Voltar ao Exame" apenas fecha o relatorio e mantem a tela do exame
+  // finalizado, para quem quiser revisar as respostas ali mesmo.
+  el('btnBackToExam').addEventListener('click', () => { el('reportOverlay').style.display='none'; });
   el('btnPrintReport').addEventListener('click', () => window.print());
   el('btnReviewFromReport').addEventListener('click', () => { el('reportOverlay').style.display='none'; openReview('all'); });
   el('btnRetakeWrong').addEventListener('click', () => retake('wrong'));
@@ -952,6 +956,13 @@ function computeResults() {
   });
 
   return { total, correct, answered, incorrect, incomplete, scaledScore, passing, passed, percent, byTopic };
+}
+
+function returnToSetup() {
+  clearInterval(timerInterval);
+  el('examScreen').style.display = 'none';
+  el('setupScreen').style.display = 'block';
+  refreshExamMeta();
 }
 
 function endExam() {
