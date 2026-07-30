@@ -113,6 +113,17 @@
 
 * { box-sizing: border-box; }
 
+button {
+  transition: background .15s ease, filter .15s ease, transform .05s ease;
+  font-family: inherit;
+}
+button:active { transform: translateY(1px); }
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
 /* Base de escala de fonte: 1rem = tamanho definido aqui. O botao A-/A+
    muda este valor via JS (document.documentElement.style.fontSize),
    e como o resto do CSS usa rem para tamanho de texto, a pagina inteira
@@ -140,11 +151,16 @@ body {
   color: var(--titlebar-text);
   padding: 12px 20px;
   font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  box-shadow: 0 2px 6px var(--shadow);
+  position: relative;
+  z-index: 10;
 }
 
 .timerDisplay {
@@ -199,17 +215,17 @@ body {
 .setupCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 24px 28px;
-  width: 640px;
+  border-radius: 12px;
+  padding: 26px 30px;
+  width: 660px;
   max-width: 100%;
-  box-shadow: 0 2px 10px var(--shadow);
+  box-shadow: 0 6px 24px var(--shadow);
   height: fit-content;
 }
 
 .setupCard h2 {
   margin-top: 0;
-  border-bottom: 2px solid var(--text);
+  border-bottom: 3px solid var(--accent);
   padding-bottom: 8px;
 }
 
@@ -429,12 +445,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 4px 6px;
-  border-radius: 4px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
   cursor: pointer;
+  transition: background .12s ease, border-color .12s ease;
 }
 
-.optionRow:hover { background: var(--bg-hover); }
+.optionRow:hover { background: var(--bg-hover); border-color: var(--border); }
 .optionRow input { margin-top: 3px; }
 .optionRow .optLabel { font-weight: 600; min-width: 18px; }
 
@@ -458,8 +476,9 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
   margin-top: 20px;
   background: var(--highlight-bg);
   border: 1px solid var(--highlight-border);
-  padding: 14px;
-  border-radius: 3px;
+  border-left: 4px solid var(--warn);
+  padding: 14px 16px;
+  border-radius: 6px;
 }
 
 .answerLine { font-weight: 600; margin-bottom: 8px; color: var(--text); }
@@ -622,14 +641,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
 .reportBox {
   background: var(--bg-card);
   color: var(--text);
-  border-radius: 6px;
-  width: 820px;
+  border-radius: 12px;
+  width: 860px;
   max-width: 95%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 4px 20px var(--shadow-strong);
+  box-shadow: 0 10px 40px var(--shadow-strong);
 }
 
 .reportTitleBar {
@@ -719,9 +738,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
 .statChip {
   background: var(--bg-hover);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 4px 12px;
+  border-radius: 16px;
+  padding: 5px 14px;
   font-size: 0.8125rem;
+  font-weight: 600;
 }
 .statChip.ok { background: var(--success-bg); border-color: var(--success-text); color: var(--success-text); }
 .statChip.bad { background: var(--error-bg); border-color: var(--error-text); color: var(--error-text); }
@@ -808,6 +828,157 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
 
 .bottombar .primary { background: var(--accent); color: #fff; border-color: var(--accent-border); }
 .bottombar .primary:hover { background: var(--accent-hover); }
+
+/* ---------------- ESTATISTICAS ---------------- */
+.statsEmpty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 20px;
+  line-height: 1.8;
+}
+
+.statsHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.statsHeader select {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-size: 0.933rem;
+  background: var(--bg-input);
+  color: var(--text);
+}
+
+.donutWrap {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  padding: 18px 22px;
+  margin: 16px 0;
+}
+
+.donut {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.donutHole {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutPct { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+.donutLabel { font-size: 0.75rem; color: var(--text-muted); }
+
+.donutLegend { line-height: 2; font-size: 0.933rem; }
+.legendDot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.legendTotal { color: var(--text-muted); font-size: 0.8125rem; margin-top: 4px; }
+
+.evoChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  padding: 12px 14px 6px 14px;
+  margin: 10px 0 16px 0;
+}
+
+.evoBar {
+  flex: 1;
+  max-width: 46px;
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  min-height: 4px;
+}
+.evoBar.pass { background: var(--pass); }
+.evoBar.fail { background: var(--fail); }
+.evoBar span {
+  position: absolute;
+  top: -1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.qStatRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 0.875rem;
+}
+
+.qStatLabel { min-width: 70px; font-weight: 600; }
+
+.qStatTrack {
+  width: 160px;
+  flex-shrink: 0;
+  height: 14px;
+  background: var(--bg-hover);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.qStatFill { height: 100%; border-radius: 8px; }
+.qStatFill.good { background: var(--pass); }
+.qStatFill.bad { background: var(--fail); }
+
+.qStatPct { min-width: 44px; font-weight: 600; text-align: right; }
+
+.qStatDetail {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.trainBtn {
+  display: block;
+  margin: 14px 0 6px 0;
+  padding: 10px 18px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.933rem;
+  font-weight: 600;
+}
+.trainBtn:hover { background: var(--accent-hover); }
+
+.statsNote { color: var(--text-muted); font-size: 0.8125rem; margin-top: 16px; }
 
 @media print {
   :root, :root[data-theme="dark"] {

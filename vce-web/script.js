@@ -19,6 +19,7 @@ let sessionActive = false;
 const SESSION_KEY = 'vce_session';
 const HISTORY_KEY = 'vce_history';
 const THEME_KEY = 'vce_theme';
+const STATS_KEY = 'vce_stats';
 
 // Escapa texto que vem de dados (nome do candidato, titulo da prova,
 // enunciados de .txt importados) antes de inserir em innerHTML, para
@@ -183,6 +184,7 @@ function initSetupScreen() {
   el('btnStart').addEventListener('click', startExam);
   el('btnContinue').addEventListener('click', continueSession);
   el('btnHistory').addEventListener('click', () => openHistory());
+  el('btnStats').addEventListener('click', () => openStats());
   initImportUI();
 }
 
@@ -667,6 +669,10 @@ function bindExamEvents() {
   el('btnClearHistory').addEventListener('click', () => {
     if (confirm('Limpar todo o historico de notas?')) { localStorage.removeItem(HISTORY_KEY); openHistory(); }
   });
+
+  // Stats buttons
+  el('closeStats').addEventListener('click', () => { el('statsOverlay').style.display='none'; });
+  el('btnClearStats').addEventListener('click', clearStatsForSelected);
 }
 
 function buildCalculator() {
@@ -871,6 +877,7 @@ function endExam() {
   clearInterval(timerInterval);
   const r = computeResults();
   saveToHistory(r);
+  recordStats(r);
   clearActiveSession();
   showScoreReport(r);
 }
@@ -1009,6 +1016,216 @@ function openHistory() {
     });
   }
   el('historyOverlay').style.display = 'flex';
+}
+
+// ============================================================
+// ESTATISTICAS DE ESTUDO (agregadas por prova e por questao)
+// ============================================================
+function getStats() {
+  try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch (e) { return {}; }
+}
+
+function saveStatsData(stats) {
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+// Chamado ao finalizar cada prova: acumula, por questao, quantas vezes ela
+// foi vista, acertada, errada ou deixada em branco - e a serie de notas.
+function recordStats(r) {
+  const stats = getStats();
+  const ex = stats[config.examId] || { title: '', attempts: 0, scores: [], questions: {} };
+  // guarda o titulo "limpo" (sem o sufixo de refazer)
+  const cleanTitle = config.examTitle.replace(/ \(Refazer\)$/, '');
+  if (!ex.title || !/\(Refazer\)$/.test(config.examTitle)) ex.title = cleanTitle;
+  ex.attempts++;
+  ex.scores.push({ score: r.scaledScore, passing: r.passing, date: Date.now() });
+  ex.scores = ex.scores.slice(-50);
+  questions.forEach(q => {
+    const qs = ex.questions[q.id] || { seen: 0, correct: 0, wrong: 0, blank: 0 };
+    qs.seen++;
+    if (!isAnswered(q)) qs.blank++;
+    else if (isCorrect(q)) qs.correct++;
+    else qs.wrong++;
+    ex.questions[q.id] = qs;
+  });
+  stats[config.examId] = ex;
+  saveStatsData(stats);
+}
+
+function questionSnippet(examId, qid) {
+  const ex = EXAMS_DATA.exams.find(e => e.id === examId);
+  const q = ex && ex.questions.find(qq => qq.id === qid);
+  if (!q) return '';
+  return q.question.slice(0, 90).replace(/\n/g, ' ').replace(/```/g, '');
+}
+
+function openStats(examId) {
+  const stats = getStats();
+  const ids = Object.keys(stats);
+  const body = el('statsBody');
+
+  if (!ids.length) {
+    body.innerHTML = '<div class="statsEmpty">Nenhuma estatistica registrada ainda.<br>' +
+      'Finalize uma prova para comecar a acompanhar seu desempenho.</div>';
+    el('statsOverlay').style.display = 'flex';
+    return;
+  }
+
+  const selected = (examId && stats[examId]) ? examId : ids[0];
+  const ex = stats[selected];
+  const loadedExam = EXAMS_DATA.exams.find(e => e.id === selected);
+
+  // ---------- agregados gerais ----------
+  let seen = 0, correct = 0, wrong = 0, blank = 0;
+  Object.values(ex.questions).forEach(qs => {
+    seen += qs.seen; correct += qs.correct; wrong += qs.wrong; blank += qs.blank;
+  });
+  const pctCorrect = seen ? Math.round((correct / seen) * 100) : 0;
+  const pctWrong = seen ? Math.round((wrong / seen) * 100) : 0;
+  const pctBlank = Math.max(0, 100 - pctCorrect - pctWrong);
+
+  const scores = ex.scores || [];
+  const avg = scores.length ? Math.round(scores.reduce((s, x) => s + x.score, 0) / scores.length) : 0;
+  const best = scores.length ? Math.max(...scores.map(x => x.score)) : 0;
+  const last = scores.length ? scores[scores.length - 1].score : 0;
+  const passedCount = scores.filter(x => x.score >= (x.passing || 500)).length;
+
+  // ---------- seletor de prova ----------
+  const options = ids.map(id =>
+    `<option value="${escapeHtml(id)}" ${id === selected ? 'selected' : ''}>${escapeHtml(stats[id].title || id)}</option>`
+  ).join('');
+
+  // ---------- grafico de rosca (acertos/erros/brancos) ----------
+  const degC = pctCorrect * 3.6, degW = degC + pctWrong * 3.6;
+  const donut = `
+    <div class="donutWrap">
+      <div class="donut" style="background: conic-gradient(var(--pass) 0deg ${degC}deg, var(--fail) ${degC}deg ${degW}deg, var(--border) ${degW}deg 360deg);">
+        <div class="donutHole"><span class="donutPct">${pctCorrect}%</span><span class="donutLabel">acerto</span></div>
+      </div>
+      <div class="donutLegend">
+        <div><span class="legendDot" style="background:var(--pass)"></span> Acertos: ${correct} (${pctCorrect}%)</div>
+        <div><span class="legendDot" style="background:var(--fail)"></span> Erros: ${wrong} (${pctWrong}%)</div>
+        <div><span class="legendDot" style="background:var(--border)"></span> Em branco: ${blank} (${pctBlank}%)</div>
+        <div class="legendTotal">${seen} respostas em ${ex.attempts} tentativa(s)</div>
+      </div>
+    </div>`;
+
+  // ---------- evolucao das notas (ultimas 12) ----------
+  const lastScores = scores.slice(-12);
+  const evoBars = lastScores.map(s => {
+    const h = Math.max(4, Math.round((s.score / 1000) * 100));
+    const cls = s.score >= (s.passing || 500) ? 'pass' : 'fail';
+    return `<div class="evoBar ${cls}" style="height:${h}%" title="${s.score}/1000"><span>${s.score}</span></div>`;
+  }).join('');
+  const evolution = lastScores.length ? `
+    <h3>Evolucao das notas (ultimas ${lastScores.length})</h3>
+    <div class="evoChart">${evoBars}</div>` : '';
+
+  // ---------- desempenho por topico ----------
+  let topicSection = '';
+  if (loadedExam) {
+    const byTopic = {};
+    loadedExam.questions.forEach(q => {
+      const qs = ex.questions[q.id];
+      if (!qs) return;
+      if (!byTopic[q.topic]) byTopic[q.topic] = { seen: 0, correct: 0 };
+      byTopic[q.topic].seen += qs.seen;
+      byTopic[q.topic].correct += qs.correct;
+    });
+    const rows = Object.keys(byTopic).sort((a, b) => a - b).map(t => {
+      const d = byTopic[t];
+      const p = d.seen ? Math.round((d.correct / d.seen) * 100) : 0;
+      return `<div class="qStatRow">
+        <span class="qStatLabel">Topico ${escapeHtml(t)}</span>
+        <div class="qStatTrack"><div class="qStatFill ${p >= 60 ? 'good' : 'bad'}" style="width:${p}%"></div></div>
+        <span class="qStatPct">${p}%</span>
+      </div>`;
+    }).join('');
+    if (rows) topicSection = `<h3>Desempenho por topico</h3>${rows}`;
+  }
+
+  // ---------- questoes que mais erra / mais acerta ----------
+  const entries = Object.entries(ex.questions).map(([qid, qs]) => ({ qid: +qid, ...qs }));
+  const worst = entries.filter(q => q.wrong > 0)
+    .sort((a, b) => b.wrong - a.wrong || (b.wrong / b.seen) - (a.wrong / a.seen))
+    .slice(0, 8);
+  const bestQ = entries.filter(q => q.correct > 0)
+    .sort((a, b) => (b.correct / b.seen) - (a.correct / a.seen) || b.correct - a.correct)
+    .slice(0, 8);
+
+  function qRows(list, kind) {
+    return list.map(q => {
+      const rate = Math.round(((kind === 'bad' ? q.wrong : q.correct) / q.seen) * 100);
+      const snip = questionSnippet(selected, q.qid);
+      const detail = kind === 'bad' ? `${q.wrong} erro(s) em ${q.seen}` : `${q.correct} acerto(s) em ${q.seen}`;
+      return `<div class="qStatRow" title="${escapeHtml(snip)}">
+        <span class="qStatLabel">Q${q.qid}</span>
+        <div class="qStatTrack"><div class="qStatFill ${kind}" style="width:${rate}%"></div></div>
+        <span class="qStatPct">${rate}%</span>
+        <span class="qStatDetail">${detail}${snip ? ' - ' + escapeHtml(snip) + '...' : ''}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const worstSection = worst.length
+    ? `<h3>Questoes que voce mais erra</h3>${qRows(worst, 'bad')}`
+    : '';
+  const bestSection = bestQ.length
+    ? `<h3>Questoes que voce mais acerta</h3>${qRows(bestQ, 'good')}`
+    : '';
+
+  // botao de treino: refaz as questoes mais erradas (se a prova estiver carregada)
+  const trainIds = loadedExam
+    ? entries.filter(q => q.wrong > 0)
+        .sort((a, b) => b.wrong - a.wrong)
+        .map(q => q.qid)
+        .filter(qid => loadedExam.questions.some(qq => qq.id === qid))
+        .slice(0, 15)
+    : [];
+  const trainBtn = trainIds.length
+    ? `<button id="btnTrainWorst" class="trainBtn">Treinar as ${trainIds.length} questoes que voce mais erra</button>`
+    : '';
+
+  body.innerHTML = `
+    <div class="statsHeader">
+      <label for="statsExamSelect"><strong>Prova:</strong></label>
+      <select id="statsExamSelect">${options}</select>
+    </div>
+    <div class="reportStats">
+      <span class="statChip">Tentativas: ${ex.attempts}</span>
+      <span class="statChip">Media: ${avg}/1000</span>
+      <span class="statChip ok">Melhor: ${best}/1000</span>
+      <span class="statChip">Ultima: ${last}/1000</span>
+      <span class="statChip ${passedCount ? 'ok' : 'warn'}">Aprovacoes: ${passedCount}/${scores.length}</span>
+    </div>
+    ${donut}
+    ${evolution}
+    ${topicSection}
+    ${worstSection}
+    ${trainBtn}
+    ${bestSection}
+    ${loadedExam ? '' : '<p class="statsNote">Obs: esta prova nao esta carregada no app, entao topicos e enunciados nao podem ser exibidos.</p>'}
+  `;
+
+  el('statsExamSelect').addEventListener('change', (e) => openStats(e.target.value));
+  const tb = el('btnTrainWorst');
+  if (tb) tb.addEventListener('click', () => {
+    el('statsOverlay').style.display = 'none';
+    startCustomRetake(selected, trainIds);
+  });
+
+  el('statsOverlay').style.display = 'flex';
+  el('statsOverlay').dataset.examId = selected;
+}
+
+function clearStatsForSelected() {
+  const examId = el('statsOverlay').dataset.examId;
+  const stats = getStats();
+  if (!examId || !stats[examId]) return;
+  if (!confirm(`Limpar as estatisticas de "${stats[examId].title || examId}"?`)) return;
+  delete stats[examId];
+  saveStatsData(stats);
+  openStats();
 }
 
 // Refazer a partir do relatorio atual

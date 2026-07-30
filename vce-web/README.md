@@ -50,6 +50,12 @@ questões) e um simulado de demonstração com 3 questões.
   desempenho por tópico, e opção de impressão.
 - **Histórico de tentativas**, com botões para refazer só as questões
   erradas ou só as incompletas de uma tentativa anterior.
+- **Estatísticas de estudo por prova** (botão "Estatisticas" na tela
+  inicial): gráfico de rosca com percentual de acertos/erros/em branco,
+  evolução das últimas notas, desempenho por tópico, ranking das questões
+  que você mais erra e mais acerta, e um botão para **treinar direto as
+  questões mais erradas**. Os dados são acumulados automaticamente a cada
+  prova finalizada (salvos no navegador, chave `vce_stats`).
 
 ## Como funciona (arquitetura)
 

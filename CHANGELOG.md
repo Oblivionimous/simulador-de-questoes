@@ -10,6 +10,50 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Estatísticas de estudo e polimento visual
+
+**Motivação:** dar visibilidade de onde reforçar os estudos — percentuais,
+questões mais erradas/acertadas e estatística geral por prova — além de
+deixar o layout mais bonito.
+
+### Adicionado
+- **Estatísticas de estudo** (novo botão "Estatisticas" na tela inicial,
+  overlay próprio): para cada prova já utilizada mostra —
+  - resumo em chips: tentativas, nota média, melhor nota, última nota e
+    total de aprovações;
+  - **gráfico de rosca** (CSS `conic-gradient`, sem bibliotecas) com o
+    percentual de acertos, erros e respostas em branco acumulados;
+  - **gráfico de barras com a evolução das últimas 12 notas** (verde/
+    vermelho conforme aprovado ou não);
+  - **desempenho por tópico** com barras de percentual;
+  - ranking das **questões que você mais erra** e das **que mais acerta**
+    (percentual, contagem e trecho do enunciado);
+  - botão **"Treinar as questões que você mais erra"**, que abre na hora
+    uma prova personalizada só com elas (reusa o modo refazer existente);
+  - seletor para alternar entre as provas com dados e botão para limpar as
+    estatísticas da prova exibida.
+- Coleta automática: ao finalizar qualquer prova, `recordStats()` acumula
+  por questão (vista/acertada/errada/em branco) e a série de notas na
+  chave `vce_stats` do `localStorage` — funciona também no modo offline.
+
+### Alterado (polimento visual)
+- Transições suaves em todos os botões + efeito de "pressionar";
+  contorno visível de foco para navegação por teclado (`:focus-visible`).
+- Cards com cantos mais arredondados e sombras mais suaves; título dos
+  cards sublinhado com a cor de destaque (verde).
+- Alternativas das questões com área de clique maior e borda no hover;
+  caixa de resposta com barra lateral de destaque.
+- Barra de título com sombra sutil; chips de estatísticas em negrito;
+  overlays maiores e com sombra mais profunda.
+
+### Testes realizados
+- Playwright: 3 tentativas com resultados diferentes na prova de exemplo →
+  estatísticas conferidas número a número (média 444 para notas 333/333/667,
+  rosca 44% = 4 acertos em 9 respostas, tópico 1 em 67%, Q1 com 67% de
+  erro, Q2 com 100% de acerto); botão de treino abriu prova personalizada
+  contendo exatamente a questão errada; visual verificado em modo claro e
+  escuro por screenshot; sem erros de console.
+
 ## 2026-07-30 — Acessibilidade, página de ajuda do formato, logs e ajustes de UI
 
 **Motivação:** pedido do usuário — página explicando como montar o `.txt`
