@@ -528,9 +528,12 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
   display: flex;
   align-items: center;
   gap: 8px;
+  row-gap: 8px;
   padding: 10px 16px;
   background: var(--bg-soft);
   border-top: 1px solid var(--border);
+  /* Permite que um GRUPO inteiro desca de linha em telas estreitas,
+     mas nunca que os botoes quebrem dentro do proprio grupo. */
   flex-wrap: wrap;
 }
 
@@ -538,7 +541,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .bbGroupCenter {
@@ -554,12 +558,19 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
   color: var(--text);
   border-radius: 3px;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 0.875rem;
 }
 
 .bottombar button:hover { filter: brightness(0.95); }
 .spacer { flex: 1; }
 
-.reviewDropdownWrap { position: relative; }
+.reviewDropdownWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
 .reviewMenu {
   position: absolute;
