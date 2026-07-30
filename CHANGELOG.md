@@ -10,6 +10,112 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Revisão de segurança/robustez e reposicionamento do import
+
+**Motivação:** análise geral do sistema em busca de falhas de segurança e
+robustez (sem tocar nas questões, que são fiéis ao PDF original), além de
+melhorar a posição da área de importação de provas `.txt` na tela inicial.
+
+### Segurança (corrigido)
+- **XSS**: nome do candidato, título/ID da prova e trechos de enunciado
+  eram injetados via `innerHTML` sem escape no Score Report, no Histórico
+  e no painel de Revisão — um `.txt` importado ou um nome malicioso podia
+  executar script. Adicionado `escapeHtml()` em `script.js`, aplicado em
+  todos esses pontos (verificado com payload real de XSS no navegador:
+  não dispara mais, texto aparece literal).
+- `import_simulado.php`: passa a rejeitar uploads acima de 3MB.
+- `save_session.php`: passa a aceitar só POST (405 para outros métodos),
+  rejeitar payloads acima de 2MB (413) e gravar com `LOCK_EX`.
+- `gerar_exams.php`: só executa via linha de comando; acessado por URL em
+  um site hospedado, retorna 403.
+
+### Robustez (corrigido)
+- Tela inicial não quebra mais se nenhuma prova estiver carregada (ex.:
+  `exams.js` ausente no modo offline): mostra aviso e desabilita "Iniciar".
+- O tempo restante do timer agora é salvo na sessão e restaurado — antes,
+  retomar uma prova com timer reiniciava a contagem do zero.
+
+### Alterado (posicionamento do import)
+- A área "Importar Nova Prova (.txt)" saiu do card separado no fim da
+  página e virou um botão "Importar .txt" ao lado do seletor de prova,
+  que expande um painel compacto logo abaixo — importar acontece no mesmo
+  lugar onde se escolhe a prova, sem rolar a tela.
+
+### Testes realizados
+- `curl`: gerar_exams via HTTP → 403; save_session GET → 405; payload
+  gigante → 413; upload gigante → rejeitado.
+- Playwright: painel de import fecha/abre pelo toggle, import funciona no
+  novo local, prova com HTML malicioso no título/enunciado + candidato
+  malicioso não disparam XSS no report/histórico/revisão.
+- `php -l` em todos os PHPs, `node --check` no script.js e
+  `php gerar_exams.php` reproduzível.
+
+## 2026-07-30 — Explicações das questões expandidas
+
+**Motivação:** as explicações mostradas na caixa de resposta eram curtas
+(1-2 linhas); o objetivo é torná-las mais didáticas, com até 5 linhas cada.
+
+### Alterado
+- Campo `EXPLICACAO:` de todas as 161 questões de
+  `vce-web/simulados/lpi-201-450.txt` e das 3 questões de
+  `vce-web/simulados/EXEMPLO-modelo.txt` reescrito: cada explicação agora
+  tem 2-5 linhas com contexto técnico, o porquê da resposta correta e,
+  quando relevante, por que as alternativas erradas mais plausíveis não
+  servem. Usa o formato multi-linha já suportado pelo parser (linhas de
+  continuação após `EXPLICACAO:`), renderizado com quebras reais na caixa
+  de resposta (`white-space: pre-wrap`).
+- `vce-web/exams.js` regenerado via `php gerar_exams.php` para refletir as
+  novas explicações no modo offline.
+
+### Observação
+- A questão `@@@130` (comando que exibe o caminho físico de um módulo do
+  kernel) mantém o gabarito original `A` (modprobe -i), mas a explicação
+  registra a ressalva de que o comando classicamente documentado para isso
+  é `modinfo -n` (alternativa B) — gabarito a conferir.
+
+### Testes realizados
+- Contagens estruturais preservadas: 161 blocos `@@@`/`RESPOSTA` no
+  lpi-201-450 e 3 no EXEMPLO (nenhuma questão perdida/duplicada).
+- Diff confirmando que apenas linhas de explicação mudaram (perguntas,
+  alternativas e gabaritos intactos).
+- `php gerar_exams.php` reproduzível (regenerar não gera diferença).
+- Verificação visual no navegador (Playwright): explicação multi-linha da
+  questão 1 renderizada corretamente na caixa de resposta.
+
+## 2026-07-30 — Modo escuro
+
+**Motivação:** oferecer uma opção de tema escuro para quem usa o simulador
+à noite ou prefere interfaces escuras.
+
+### Adicionado
+- Botão "Modo escuro"/"Modo claro" fixo no canto superior direito
+  (`#themeToggle`), visível em todas as telas (setup, exame e overlays).
+  A escolha é salva em `localStorage` (`vce_theme`) e restaurada a cada
+  carregamento; sem escolha salva, o app segue o tema do sistema
+  operacional (`prefers-color-scheme`).
+- Script inline no `<head>` de `index.html` que aplica o tema salvo antes
+  da página renderizar, evitando o "flash" de tela clara antes de trocar
+  para escuro.
+
+### Alterado
+- `vce-web/style.css` reescrito para usar variáveis CSS (`--bg`, `--text`,
+  `--border`, `--pass`, `--fail` etc.) em vez de cores fixas, com um bloco
+  `:root[data-theme="dark"]` sobrescrevendo essas variáveis. Isso evitou
+  duplicar todas as regras existentes para o tema escuro.
+- `vce-web/script.js`: cores que eram geradas via HTML inline em
+  JavaScript (nota aprovado/reprovado no relatório e no histórico) agora
+  usam `var(--pass)`/`var(--fail)` em vez de códigos hexadecimais fixos,
+  para também respeitar o tema escuro.
+- Regra `@media print` ajustada para sempre imprimir em cores claras,
+  mesmo com o modo escuro ativado (evita gastar tinta imprimindo fundo
+  escuro).
+
+### Testes realizados
+- Teste end-to-end com Playwright: alternância clara→escura→clara,
+  persistência do tema após reload sem flash visível, e captura de tela
+  das telas de setup, exame, caixa de resposta e relatório de pontuação
+  em modo escuro para conferência visual de contraste.
+
 ## 2026-07-30 — Importar prova, auto-save e opções lembradas (PR #2)
 
 **Motivação:** eliminar passos manuais para adicionar uma prova nova e

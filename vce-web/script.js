@@ -18,6 +18,16 @@ let sessionActive = false;
 
 const SESSION_KEY = 'vce_session';
 const HISTORY_KEY = 'vce_history';
+const THEME_KEY = 'vce_theme';
+
+// Escapa texto que vem de dados (nome do candidato, titulo da prova,
+// enunciados de .txt importados) antes de inserir em innerHTML, para
+// impedir injecao de HTML/script (XSS).
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 const SETUP_PREFS_KEY = 'vce_setup_prefs';
 const el = (id) => document.getElementById(id);
 
@@ -44,6 +54,32 @@ async function loadExams() {
   } catch (e) {
     // sem servidor PHP: usa o exams.js estatico (fallback)
   }
+}
+
+// ============================================================
+// TEMA (MODO ESCURO)
+// ============================================================
+function currentTheme() {
+  const attr = document.documentElement.getAttribute('data-theme');
+  if (attr === 'dark' || attr === 'light') return attr;
+  // sem preferencia salva: segue o esquema de cores do sistema operacional
+  return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  const btn = el('themeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+}
+
+function initThemeToggle() {
+  const btn = el('themeToggle');
+  if (!btn) return;
+  btn.textContent = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
+  btn.addEventListener('click', () => {
+    applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  });
 }
 
 // ============================================================
@@ -94,6 +130,14 @@ function currentExamData() {
 
 function refreshExamMeta() {
   const ex = currentExamData();
+  if (!ex) {
+    // nenhuma prova carregada (ex: exams.js ausente e sem servidor)
+    el('allCount').textContent = 'todas (0)';
+    el('btnStart').disabled = true;
+    el('customInfo').textContent = '(nenhuma prova disponivel - importe um .txt ou verifique o exams.js)';
+    return;
+  }
+  el('btnStart').disabled = false;
   const total = ex.questions.length;
   el('allCount').textContent = `todas (${total})`;
   el('rangeTo').value = total;
@@ -194,6 +238,7 @@ function buildChoiceOrder(q, randomize) {
 function startExam() {
   saveSetupPrefs();
   const ex = currentExamData();
+  if (!ex) { alert('Nenhuma prova disponivel para iniciar.'); return; }
   allQuestions = ex.questions;
 
   const mode = document.querySelector('input[name="mode"]:checked').value;
@@ -299,7 +344,14 @@ function showImportStatus(msg, kind) {
 function initImportUI() {
   const fileInput = el('importFileInput');
   const btn = el('btnImport');
+  const toggle = el('btnImportToggle');
+  const panel = el('importPanel');
   const hint = el('importHint');
+
+  toggle.addEventListener('click', () => {
+    const open = panel.style.display !== 'none';
+    panel.style.display = open ? 'none' : 'block';
+  });
 
   if (!serverAvailable) {
     fileInput.disabled = true;
@@ -592,12 +644,12 @@ function openReview(mode) {
     if (!answered){icon='?';cls='rUnanswered';}
     else if (correct){icon='OK';cls='rCorrect';}
     else {icon='X';cls='rWrong';}
-    row.innerHTML = `<span class="rIcon ${cls}">${icon}</span> Item ${idx+1} (Q${q.id}) `+
-      `${state.marked?'<span class="rMarked">[Marcada]</span> ':''}- ${q.question.slice(0,80).replace(/\n/g,' ')}...`;
+    row.innerHTML = `<span class="rIcon ${cls}">${icon}</span> Item ${idx+1} (Q${escapeHtml(q.id)}) `+
+      `${state.marked?'<span class="rMarked">[Marcada]</span> ':''}- ${escapeHtml(q.question.slice(0,80).replace(/\n/g,' '))}...`;
     row.addEventListener('click', () => { current=idx; renderQuestion(); el('reviewOverlay').style.display='none'; });
     list.appendChild(row);
   });
-  if (shown===0) list.innerHTML = '<div style="color:#888;padding:12px;">Nenhuma questao nesta categoria.</div>';
+  if (shown===0) list.innerHTML = '<div style="color:var(--text-muted);padding:12px;">Nenhuma questao nesta categoria.</div>';
   el('reviewOverlay').style.display = 'flex';
 }
 
@@ -605,7 +657,7 @@ function openReview(mode) {
 // SALVAR / CARREGAR SESSAO
 // ============================================================
 function buildSessionPayload() {
-  return { active: true, savedAt: Date.now(), config, current, userState, elapsedSeconds };
+  return { active: true, savedAt: Date.now(), config, current, userState, elapsedSeconds, timeLeft };
 }
 
 // localStorage e sempre a fonte de verdade (evita misturar sessao de
@@ -642,6 +694,11 @@ function restoreSessionFromData(data, ex) {
   });
   sessionActive = true;
   enterExamScreen();
+  // Restaura o tempo restante do timer salvo na sessao (enterExamScreen
+  // reinicia timeLeft do zero, entao sobrescreve depois).
+  if (config.timerOn && typeof data.timeLeft === 'number' && data.timeLeft > 0) {
+    timeLeft = data.timeLeft;
+  }
 }
 
 let serverSaveTimer = null;
@@ -762,7 +819,7 @@ function showScoreReport(r) {
   const em = Math.floor(elapsedSeconds/60), es = elapsedSeconds%60;
   const elapsedStr = `${em}:${String(es).padStart(2,'0')}`;
 
-  const gradeColor = r.passed ? '#1a7f1a' : '#c0392b';
+  const gradeColor = r.passed ? 'var(--pass)' : 'var(--fail)';
   const gradeText = r.passed ? 'APROVADO' : 'REPROVADO';
 
   // barra: sua nota vs nota minima (escala 0-1000)
@@ -785,11 +842,11 @@ function showScoreReport(r) {
 
   el('reportBody').innerHTML = `
     <h1>Examination Score Report</h1>
-    <h2>${config.examTitle}</h2>
+    <h2>${escapeHtml(config.examTitle)}</h2>
     <div class="reportMeta">
-      <div><strong>CANDIDATO:</strong> ${config.candidate}</div>
+      <div><strong>CANDIDATO:</strong> ${escapeHtml(config.candidate)}</div>
       <div class="metaRow"><span><strong>DATA:</strong> ${dateStr}</span><span><strong>HORA:</strong> ${timeStr}</span></div>
-      <div class="metaRow"><span><strong>PROVA:</strong> ${config.examId}</span><span><strong>TEMPO DECORRIDO:</strong> ${elapsedStr}</span></div>
+      <div class="metaRow"><span><strong>PROVA:</strong> ${escapeHtml(config.examId)}</span><span><strong>TEMPO DECORRIDO:</strong> ${elapsedStr}</span></div>
     </div>
 
     <div class="chartWrap">
@@ -856,14 +913,14 @@ function openHistory() {
   const hist = getHistory();
   const body = el('historyBody');
   if (!hist.length) {
-    body.innerHTML = '<div style="color:#888;padding:20px;text-align:center;">Nenhuma tentativa registrada ainda.</div>';
+    body.innerHTML = '<div style="color:var(--text-muted);padding:20px;text-align:center;">Nenhuma tentativa registrada ainda.</div>';
   } else {
     let rows = '';
     hist.forEach((h, i) => {
-      const grade = h.passed ? '<span style="color:#1a7f1a;font-weight:700;">Aprovado</span>' : '<span style="color:#c0392b;font-weight:700;">Reprovado</span>';
+      const grade = h.passed ? '<span style="color:var(--pass);font-weight:700;">Aprovado</span>' : '<span style="color:var(--fail);font-weight:700;">Reprovado</span>';
       rows += `<tr>
-        <td>${h.date}</td><td>${h.time}</td><td>${h.candidate}</td>
-        <td>${h.examTitle}</td>
+        <td>${escapeHtml(h.date)}</td><td>${escapeHtml(h.time)}</td><td>${escapeHtml(h.candidate)}</td>
+        <td>${escapeHtml(h.examTitle)}</td>
         <td style="text-align:center;">${h.scaledScore}</td>
         <td style="text-align:center;">${h.passing}</td>
         <td style="text-align:center;">${grade}</td>
@@ -937,6 +994,7 @@ function startCustomRetake(examId, ids) {
 // INIT
 // ============================================================
 (async function init() {
+  initThemeToggle();
   await loadExams();
   initSetupScreen();
   bindExamEvents();

@@ -23,6 +23,12 @@ if (!isset($_FILES['simuladoFile']) || $_FILES['simuladoFile']['error'] !== UPLO
 
 $upload = $_FILES['simuladoFile'];
 $origName = $upload['name'];
+
+$maxBytes = 3 * 1024 * 1024; // 3MB e mais que suficiente para um banco de questoes em texto
+if ($upload['size'] > $maxBytes) {
+    respond(400, ['ok' => false, 'error' => 'Arquivo muito grande (limite: 3MB).']);
+}
+
 $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
 if ($ext !== 'txt') {
     respond(400, ['ok' => false, 'error' => 'O arquivo precisa ter extensao .txt']);
