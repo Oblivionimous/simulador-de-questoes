@@ -45,6 +45,15 @@ questões) e um simulado de demonstração com 3 questões.
   telas) alterna entre claro e escuro. A escolha fica salva no navegador
   (`localStorage`) e, se você nunca escolheu nada, o app já abre seguindo o
   tema do sistema operacional.
+- **Menu de Configurações** (ícone ⚙ na barra de título): tema (claro/
+  escuro/automático), tamanho da fonte, e opção de ocultar os botões
+  "Mostrar Resposta", "Calculadora" e "Revisão" durante a prova — útil
+  para simular uma prova real sem essas ajudas. Ponto de extensão para
+  novas opções no futuro.
+- **Barra inferior da prova reorganizada** no padrão do VCE Player:
+  navegação (Anterior/Próxima) à esquerda, Revisão/Mostrar Resposta/
+  Calculadora agrupados no centro, e Menu Inicial/Salvar Sessão/Finalizar
+  Exame à direita.
 - **Relatório de nota (Score Report)** ao finalizar: nota em escala 0-1000,
   gráfico comparando sua nota com a nota mínima, aprovado/reprovado,
   desempenho por tópico, e opção de impressão.

@@ -10,6 +10,45 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Reorganização dos botões da prova e menu de Configurações
+
+**Motivação:** aproximar o layout da tela de prova do padrão do VCE
+Player original (referência enviada pelo usuário) e criar um ponto de
+extensão para configurações extras no futuro.
+
+### Adicionado
+- **Menu de Configurações** (novo botão ⚙ na barra de título, tanto na
+  tela inicial quanto na tela de prova; overlay `#settingsOverlay`):
+  - **Aparência**: seletor de tema com Claro/Escuro/**Automático** (o
+    toggle rápido da barra de título só alterna claro/escuro; o modo
+    Automático — que segue o sistema operacional e nunca fixa uma
+    preferência salva — só existe no menu); seletor de tamanho de fonte
+    com rótulos amigáveis (Pequena/Normal/Grande/Muito grande/Extra
+    grande), usando a mesma escala em `rem` já existente.
+  - **Botões durante a prova**: checkboxes para ocultar/mostrar
+    individualmente "Mostrar Resposta", "Calculadora" e "Revisão" —
+    persistido (`vce_button_prefs`) e aplicado imediatamente, mesmo com a
+    prova já aberta.
+  - Painel pensado para crescer: novas opções entram como mais uma linha
+    dentro das seções existentes ou uma seção nova.
+
+### Alterado (reorganização dos botões)
+- A barra inferior da tela de prova passou a ter três grupos, igual ao
+  layout de referência: **Anterior/Próxima** à esquerda; **Revisão /
+  Mostrar Resposta / Calculadora** agrupados ao centro (com divisórias);
+  **Menu Inicial / Salvar Sessão / Finalizar Exame** à direita.
+- Os botões "Mostrar Resposta" e "Calculadora" saíram do cabeçalho da
+  questão (que agora mostra só "Item X de Y") e foram para a barra
+  inferior, junto do botão "Revisão".
+
+### Testes realizados
+- Playwright: menu de Configurações abre nas duas telas; tema Automático
+  remove a preferência salva; tamanho de fonte via seletor aplica
+  corretamente; ocultar Calculadora/Revisão via Configurações some com os
+  botões na hora (inclusive com a prova já em andamento) e reativar os
+  traz de volta; fluxo de Mostrar Resposta e Calculadora seguem
+  funcionando após a reorganização; sem erros de console.
+
 ## 2026-07-30 — Treino das questões deixadas em branco
 
 **Motivação:** as estatísticas mostravam e treinavam as questões mais
