@@ -232,6 +232,7 @@ body {
 .field {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin: 14px 0;
 }
@@ -243,7 +244,10 @@ body {
 
 .field select,
 .field input[type="text"] {
-  flex: 1;
+  flex: 1 1 160px;
+  /* min-width: 0 permite que o campo encolha para caber o botao ao lado
+     dentro da caixa, em vez de empurra-lo para fora dela. */
+  min-width: 0;
   padding: 7px 10px;
   border: 1px solid var(--border-strong);
   border-radius: 4px;
@@ -312,13 +316,16 @@ select.numSmall { width: auto; }
 
 /* ---------------- IMPORTAR SIMULADO ---------------- */
 #btnImportToggle {
-  padding: 5px 10px;
+  align-self: stretch;
+  flex-shrink: 0;
+  padding: 0 12px;
   border: 1px solid var(--border-strong);
   background: var(--bg-hover);
   color: var(--text);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1;
   white-space: nowrap;
 }
 

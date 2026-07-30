@@ -10,6 +10,32 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Ajuste do botão Importar e fluxo ao finalizar o exame
+
+**Motivação:** dois problemas relatados pelo usuário: o botão "Importar
+Simulado" desalinhava e ultrapassava o enquadramento ao aumentar a fonte,
+e ao finalizar o exame o relatório fechava para a própria tela do exame,
+sem retornar ao menu inicial nem oferecer forma de voltar ao exame.
+
+### Corrigido
+- **Botão "Importar Simulado"** (`#btnImportToggle`): passa a usar
+  `align-self: stretch` para acompanhar exatamente a altura do `select`
+  de provas ao lado, com `line-height: 1` e `flex-shrink: 0`. Antes o
+  botão tinha padding vertical fixo e crescia de forma diferente do
+  `select` conforme a fonte aumentava (A+), ficando maior que a linha e
+  desalinhado.
+
+### Alterado
+- **Fluxo ao finalizar o exame** (relatório de pontuação):
+  - O botão **"Fechar"** (agora rotulado **"Fechar (Menu Inicial)"**)
+    fecha o relatório **e volta para a tela inicial**, em vez de apenas
+    esconder o overlay e deixar o usuário na tela do exame finalizado.
+  - Novo botão **"Voltar ao Exame"**: fecha o relatório e mantém a tela
+    do exame recém-finalizado, para quem quiser revisar as respostas ali
+    mesmo antes de sair.
+  - Nova função `returnToSetup()` centraliza o retorno ao menu inicial,
+    reutilizada também pelo botão "Menu Inicial" da barra da prova.
+
 ## 2026-07-30 — Reorganização dos botões da prova e menu de Configurações
 
 **Motivação:** aproximar o layout da tela de prova do padrão do VCE
