@@ -10,6 +10,46 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Revisão de segurança/robustez e reposicionamento do import
+
+**Motivação:** análise geral do sistema em busca de falhas de segurança e
+robustez (sem tocar nas questões, que são fiéis ao PDF original), além de
+melhorar a posição da área de importação de provas `.txt` na tela inicial.
+
+### Segurança (corrigido)
+- **XSS**: nome do candidato, título/ID da prova e trechos de enunciado
+  eram injetados via `innerHTML` sem escape no Score Report, no Histórico
+  e no painel de Revisão — um `.txt` importado ou um nome malicioso podia
+  executar script. Adicionado `escapeHtml()` em `script.js`, aplicado em
+  todos esses pontos (verificado com payload real de XSS no navegador:
+  não dispara mais, texto aparece literal).
+- `import_simulado.php`: passa a rejeitar uploads acima de 3MB.
+- `save_session.php`: passa a aceitar só POST (405 para outros métodos),
+  rejeitar payloads acima de 2MB (413) e gravar com `LOCK_EX`.
+- `gerar_exams.php`: só executa via linha de comando; acessado por URL em
+  um site hospedado, retorna 403.
+
+### Robustez (corrigido)
+- Tela inicial não quebra mais se nenhuma prova estiver carregada (ex.:
+  `exams.js` ausente no modo offline): mostra aviso e desabilita "Iniciar".
+- O tempo restante do timer agora é salvo na sessão e restaurado — antes,
+  retomar uma prova com timer reiniciava a contagem do zero.
+
+### Alterado (posicionamento do import)
+- A área "Importar Nova Prova (.txt)" saiu do card separado no fim da
+  página e virou um botão "Importar .txt" ao lado do seletor de prova,
+  que expande um painel compacto logo abaixo — importar acontece no mesmo
+  lugar onde se escolhe a prova, sem rolar a tela.
+
+### Testes realizados
+- `curl`: gerar_exams via HTTP → 403; save_session GET → 405; payload
+  gigante → 413; upload gigante → rejeitado.
+- Playwright: painel de import fecha/abre pelo toggle, import funciona no
+  novo local, prova com HTML malicioso no título/enunciado + candidato
+  malicioso não disparam XSS no report/histórico/revisão.
+- `php -l` em todos os PHPs, `node --check` no script.js e
+  `php gerar_exams.php` reproduzível.
+
 ## 2026-07-30 — Explicações das questões expandidas
 
 **Motivação:** as explicações mostradas na caixa de resposta eram curtas

@@ -32,9 +32,10 @@ questões) e um simulado de demonstração com 3 questões.
 - **Opções da tela inicial lembradas automaticamente** (prova, modo,
   embaralhar, nota mínima, timer etc.) — ao voltar ao app, o formulário já
   vem preenchido como da última vez.
-- **Importar uma prova nova pelo navegador**: envie um `.txt` no formato
-  padronizado direto pela tela inicial (modo servidor PHP), sem precisar
-  editar arquivos manualmente no servidor.
+- **Importar uma prova nova pelo navegador**: botão "Importar .txt" ao lado
+  do seletor de prova abre um painel para enviar um `.txt` no formato
+  padronizado (modo servidor PHP), sem precisar editar arquivos manualmente
+  no servidor.
 - **Modo escuro**: botão no canto superior direito (visível em todas as
   telas) alterna entre claro e escuro. A escolha fica salva no navegador
   (`localStorage`) e, se você nunca escolheu nada, o app já abre seguindo o
@@ -161,8 +162,8 @@ rode `php gerar_exams.php` para atualizar o `exams.js`.
 
 1. Pegue o dump bruto das questões, cole na IA junto com o texto de
    `FORMATO_QUESTOES.md` e salve o `.txt` padronizado que ela devolver.
-2. Na tela inicial do app, use o card "Importar Nova Prova (.txt)" para
-   enviar o arquivo.
+2. Na tela inicial do app, clique em "Importar .txt" (ao lado do seletor
+   de prova) e envie o arquivo pelo painel que abre.
 3. Pronto — o app salva o arquivo em `simulados/`, atualiza o
    `manifest.json` e regenera o `exams.js` automaticamente, sem precisar
    mexer em nada no servidor. A prova já aparece no dropdown "Prova" sem
@@ -252,6 +253,11 @@ vce-web/
 
 ## Observações
 
+- **Segurança**: todo texto vindo de dados (nome do candidato, título da
+  prova, enunciados de `.txt` importados) é escapado antes de ir para o
+  HTML, prevenindo XSS. Os endpoints PHP validam método e tamanho
+  (upload de prova limitado a 3MB, sessão a 2MB) e `gerar_exams.php` só
+  roda pela linha de comando (retorna 403 se acessado por URL).
 - Não há testes automatizados, linter ou pipeline de CI configurados.
 - Não há dependências de terceiros nem passo de build — é só abrir/servir os
   arquivos estáticos.

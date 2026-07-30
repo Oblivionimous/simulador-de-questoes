@@ -272,21 +272,54 @@ select.numSmall { width: auto; }
 .setupButtons .primary:hover { background: var(--accent-hover); }
 
 /* ---------------- IMPORTAR PROVA ---------------- */
+#btnImportToggle {
+  padding: 7px 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-hover);
+  color: var(--text);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+#btnImportToggle:hover { filter: brightness(0.95); }
+
+.importPanel {
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 0 0 14px 0;
+  background: var(--bg-soft);
+}
+
 .importHint {
   color: var(--text-muted);
   font-size: 13px;
-  margin: 0 0 10px 0;
+  margin: 0 0 6px 0;
 }
 
-#importCard .field input[type="file"] {
+.importPanel .field { margin: 8px 0; }
+
+.importPanel .field input[type="file"] {
   flex: 1;
   color: var(--text);
 }
 
-#importCard input:disabled,
-#importCard button:disabled {
+.importPanel input:disabled,
+.importPanel button:disabled,
+#btnImportToggle:disabled {
   opacity: .5;
   cursor: not-allowed;
+}
+
+.importPanel button {
+  padding: 7px 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .importStatus {

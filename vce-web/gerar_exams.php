@@ -11,6 +11,11 @@
 // (No modo com servidor/site isso nem e necessario: o app le
 //  os .txt direto via simulados.php.)
 // ============================================================
+if (php_sapi_name() !== 'cli') {
+    http_response_code(403);
+    exit("Este script so pode ser executado pela linha de comando (php gerar_exams.php).\n");
+}
+
 require __DIR__ . '/lib_exams.php';
 
 $dir = __DIR__ . '/simulados';
