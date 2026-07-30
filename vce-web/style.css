@@ -33,7 +33,9 @@ body {
 /* ---------------- TELA INICIAL ---------------- */
 .setupWrap {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
   padding: 30px 16px;
   overflow-y: auto;
   height: calc(100vh - 40px);
@@ -132,6 +134,34 @@ select.numSmall { width: auto; }
 }
 
 .setupButtons .primary:hover { background: #236623; }
+
+/* ---------------- IMPORTAR PROVA ---------------- */
+.importHint {
+  color: #888;
+  font-size: 13px;
+  margin: 0 0 10px 0;
+}
+
+#importCard .field input[type="file"] {
+  flex: 1;
+}
+
+#importCard input:disabled,
+#importCard button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.importStatus {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.importStatus.info { background: #eef3fb; color: #2b5b9c; }
+.importStatus.success { background: #eaf6ea; color: #1a7f1a; }
+.importStatus.error { background: #fbeaea; color: #c0392b; }
 
 /* ---------------- BARRA SUPERIOR DA PROVA ---------------- */
 .topbar {
