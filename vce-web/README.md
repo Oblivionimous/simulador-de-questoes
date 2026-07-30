@@ -25,7 +25,16 @@ questões) e um simulado de demonstração com 3 questões.
   resposta**, e uma **calculadora** embutida.
 - **Painel de revisão** filtrável (Todas / Marcadas / Incompletas / Erradas)
   para pular direto para uma questão.
-- **Salvar e continuar** a prova de onde parou.
+- **Salvar e continuar** a prova de onde parou — e também **auto-save**: o
+  progresso é salvo sozinho a cada resposta/navegação, então atualizar a
+  página no meio de uma prova volta direto para onde você parou, sem
+  precisar clicar em nada.
+- **Opções da tela inicial lembradas automaticamente** (prova, modo,
+  embaralhar, nota mínima, timer etc.) — ao voltar ao app, o formulário já
+  vem preenchido como da última vez.
+- **Importar uma prova nova pelo navegador**: envie um `.txt` no formato
+  padronizado direto pela tela inicial (modo servidor PHP), sem precisar
+  editar arquivos manualmente no servidor.
 - **Relatório de nota (Score Report)** ao finalizar: nota em escala 0-1000,
   gráfico comparando sua nota com a nota mínima, aprovado/reprovado,
   desempenho por tópico, e opção de impressão.
@@ -97,16 +106,34 @@ total, corretas, erradas, incompletas, a **nota escalada de 0 a 1000**
 comparação com a nota mínima configurada (`passed`), e o desempenho
 agregado por tópico.
 
-**5. Persistência (sessão e histórico)**
+**5. Persistência (sessão, opções e histórico)**
 
-- `localStorage` é sempre usado: `vce_session` guarda o progresso da prova
-  em andamento (para o botão "continuar"), e `vce_history` guarda até as
-  últimas 50 tentativas finalizadas (data, candidato, prova, nota,
+- `localStorage` é a fonte de verdade e é sempre usado: `vce_session` guarda
+  o progresso da prova em andamento, `vce_setup_prefs` guarda as últimas
+  opções escolhidas na tela inicial, e `vce_history` guarda até as últimas
+  50 tentativas finalizadas (data, candidato, prova, nota,
   aprovado/reprovado, lista de questões erradas/incompletas).
-- Se houver servidor PHP disponível, `saveSession()`/`continueSession()`
-  também usam `save_session.php`/`load_session.php`, que gravam/leem
-  `sessions/session.json` no disco do servidor (essa pasta é criada
-  automaticamente na primeira gravação, não existe no repositório).
+- **Auto-save da sessão**: a cada resposta, navegação de questão ou marcação
+  para revisão, o progresso é gravado no `localStorage` na hora, e enviado
+  ao servidor (`save_session.php`) com um pequeno atraso (~4s, para não
+  disparar uma requisição a cada clique). Ao trocar de aba ou fechar a
+  página, um envio final é garantido via `navigator.sendBeacon`. O botão
+  "Salvar Sessão" continua existindo para salvar manualmente a qualquer
+  momento.
+- **Auto-restore**: ao carregar a página, o app tenta retomar sozinho uma
+  sessão marcada como ativa (`active: true` no payload salvo) — por isso um
+  refresh no meio de uma prova volta direto para a tela de exame. O flag
+  fica `false` quando a prova é finalizada ("Finalizar Exame"), então um
+  refresh depois disso não reabre uma prova já concluída; sair pelo "Menu
+  Inicial" não desativa a sessão, então ela continua recuperável depois.
+- Ao restaurar (manual ou automático), o `localStorage` é sempre checado
+  antes do servidor — isso evita que a sessão de uma pessoa apareça para
+  outra, já que `save_session.php`/`load_session.php` gravam/leem um único
+  arquivo compartilhado `sessions/session.json` no servidor (sem
+  identificação de usuário; essa pasta é criada automaticamente na primeira
+  gravação, não existe no repositório). O servidor é só uma rede de
+  segurança para quando não há nada salvo localmente — é uma limitação
+  conhecida, adequada para uso pessoal/local, não multi-usuário.
 
 ## Como rodar
 
@@ -125,6 +152,22 @@ app usa o `exams.js` (fallback gerado a partir dos .txt). Sempre que editar os .
 rode `php gerar_exams.php` para atualizar o `exams.js`.
 
 ## Fluxo para adicionar um novo simulado
+
+**Opção 1 — importar pelo navegador (mais fácil, modo servidor PHP):**
+
+1. Pegue o dump bruto das questões, cole na IA junto com o texto de
+   `FORMATO_QUESTOES.md` e salve o `.txt` padronizado que ela devolver.
+2. Na tela inicial do app, use o card "Importar Nova Prova (.txt)" para
+   enviar o arquivo.
+3. Pronto — o app salva o arquivo em `simulados/`, atualiza o
+   `manifest.json` e regenera o `exams.js` automaticamente, sem precisar
+   mexer em nada no servidor. A prova já aparece no dropdown "Prova" sem
+   precisar recarregar a página.
+
+Esse fluxo só funciona rodando com servidor PHP (`php -S` ou hospedado);
+no modo duplo clique o card de importação fica desabilitado.
+
+**Opção 2 — manual (funciona em qualquer modo):**
 
 1. Pegue o dump bruto das questões.
 2. Cole na IA junto com o texto de `FORMATO_QUESTOES.md`. A IA devolve um .txt
@@ -194,8 +237,10 @@ vce-web/
 │   ├── EXEMPLO-modelo.txt
 │   └── manifest.json
 ├── parser.php                          -> parser do formato .txt (compartilhado)
+├── lib_exams.php                       -> funcoes compartilhadas (manifest/parse/exams.js)
 ├── simulados.php                       -> carregador dinâmico (modo servidor/site)
 ├── gerar_exams.php                     -> gera o exams.js a partir dos .txt
+├── import_simulado.php                 -> recebe upload de .txt pela tela inicial
 ├── save_session.php, load_session.php  -> salvar/carregar sessão em disco (servidor)
 ├── sessions/                            -> criada em runtime pelo save_session.php
 └── FORMATO_QUESTOES.md                 -> instrução para a IA padronizar questões

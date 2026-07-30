@@ -10,9 +10,15 @@ let timerInterval = null;
 let timeLeft = 0;
 let elapsedSeconds = 0;
 let customRetakeIds = null; // ids para o modo "custom" (refazer)
+// true enquanto ha uma prova em andamento (nao finalizada). Controla o
+// auto-save, para nao reativar uma sessao ja finalizada (config.examId
+// continua preenchido mesmo depois de finalizar, entao nao da pra usar
+// so o config como sinal de "sessao ativa").
+let sessionActive = false;
 
 const SESSION_KEY = 'vce_session';
 const HISTORY_KEY = 'vce_history';
+const SETUP_PREFS_KEY = 'vce_setup_prefs';
 const el = (id) => document.getElementById(id);
 
 // EXAMS: comeca com o que estiver em exams.js (fallback offline),
@@ -21,10 +27,15 @@ let EXAMS_DATA = (typeof EXAMS_DATA_STATIC !== 'undefined')
   ? EXAMS_DATA_STATIC
   : { exams: [] };
 
+// Indica se o servidor PHP respondeu (independente de ter provas ou nao).
+// Usado para habilitar recursos que dependem de servidor, como importar provas.
+let serverAvailable = false;
+
 async function loadExams() {
   try {
     const res = await fetch('simulados.php');
     if (res.ok) {
+      serverAvailable = true;
       const data = await res.json();
       if (data && Array.isArray(data.exams) && data.exams.length) {
         EXAMS_DATA = data;
@@ -38,8 +49,9 @@ async function loadExams() {
 // ============================================================
 // TELA INICIAL
 // ============================================================
-function initSetupScreen() {
+function populateExamSelect() {
   const examSelect = el('examSelect');
+  const previousValue = examSelect.value;
   examSelect.innerHTML = '';
   EXAMS_DATA.exams.forEach(ex => {
     const opt = document.createElement('option');
@@ -47,12 +59,32 @@ function initSetupScreen() {
     opt.textContent = ex.title;
     examSelect.appendChild(opt);
   });
-  examSelect.addEventListener('change', refreshExamMeta);
+  if (previousValue && EXAMS_DATA.exams.some(ex => ex.id === previousValue)) {
+    examSelect.value = previousValue;
+  }
+}
+
+function initSetupScreen() {
+  populateExamSelect();
+
+  // fase 1: restaura a prova selecionada antes de montar topicos/faixas
+  // (que dependem da prova escolhida)
+  const prefs = readSetupPrefs();
+  if (prefs && prefs.examSelect && EXAMS_DATA.exams.some(ex => ex.id === prefs.examSelect)) {
+    el('examSelect').value = prefs.examSelect;
+  }
+
+  el('examSelect').addEventListener('change', refreshExamMeta);
   refreshExamMeta();
+
+  // fase 2: restaura o resto (inclui topicSelect, modo, checkboxes, numeros)
+  applySetupPrefs();
+  bindSetupPrefsAutosave();
 
   el('btnStart').addEventListener('click', startExam);
   el('btnContinue').addEventListener('click', continueSession);
   el('btnHistory').addEventListener('click', () => openHistory());
+  initImportUI();
 }
 
 function currentExamData() {
@@ -87,6 +119,60 @@ function refreshExamMeta() {
   }
 }
 
+// ============================================================
+// LEMBRAR OPCOES DA TELA INICIAL
+// ============================================================
+const SETUP_FIELD_IDS = [
+  'examSelect', 'candidateName', 'rangeFrom', 'rangeTo', 'countN',
+  'topicSelect', 'qtypeSelect', 'randomizeQ', 'randomizeChoices', 'trainingMode',
+  'passingScore', 'timerOn', 'timerMinutes'
+];
+
+function collectSetupPrefs() {
+  const prefs = {};
+  SETUP_FIELD_IDS.forEach(id => {
+    const field = el(id);
+    if (!field) return;
+    prefs[id] = (field.type === 'checkbox') ? field.checked : field.value;
+  });
+  const modeEl = document.querySelector('input[name="mode"]:checked');
+  prefs.mode = modeEl ? modeEl.value : 'all';
+  return prefs;
+}
+
+function saveSetupPrefs() {
+  localStorage.setItem(SETUP_PREFS_KEY, JSON.stringify(collectSetupPrefs()));
+}
+
+function readSetupPrefs() {
+  try { return JSON.parse(localStorage.getItem(SETUP_PREFS_KEY)); } catch (e) { return null; }
+}
+
+function applySetupPrefs() {
+  const prefs = readSetupPrefs();
+  if (!prefs) return;
+  SETUP_FIELD_IDS.forEach(id => {
+    const field = el(id);
+    if (!field || !(id in prefs)) return;
+    if (field.type === 'checkbox') field.checked = prefs[id];
+    else field.value = prefs[id];
+  });
+  if (prefs.mode) {
+    const radio = document.querySelector(`input[name="mode"][value="${prefs.mode}"]`);
+    if (radio) radio.checked = true;
+  }
+}
+
+function bindSetupPrefsAutosave() {
+  SETUP_FIELD_IDS.forEach(id => {
+    const field = el(id);
+    if (!field) return;
+    const evt = (field.tagName === 'SELECT' || field.type === 'checkbox' || field.type === 'radio') ? 'change' : 'input';
+    field.addEventListener(evt, saveSetupPrefs);
+  });
+  document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', saveSetupPrefs));
+}
+
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -106,6 +192,7 @@ function buildChoiceOrder(q, randomize) {
 }
 
 function startExam() {
+  saveSetupPrefs();
   const ex = currentExamData();
   allQuestions = ex.questions;
 
@@ -161,6 +248,7 @@ function startExam() {
   });
 
   elapsedSeconds = 0;
+  sessionActive = true;
   enterExamScreen();
 }
 
@@ -195,6 +283,75 @@ function tick() {
       alert('Tempo esgotado! O exame sera finalizado.');
       endExam();
     }
+  }
+}
+
+// ============================================================
+// IMPORTAR PROVA (.txt) PELO NAVEGADOR
+// ============================================================
+function showImportStatus(msg, kind) {
+  const box = el('importStatus');
+  box.textContent = msg;
+  box.className = 'importStatus ' + kind;
+  box.style.display = msg ? 'block' : 'none';
+}
+
+function initImportUI() {
+  const fileInput = el('importFileInput');
+  const btn = el('btnImport');
+  const hint = el('importHint');
+
+  if (!serverAvailable) {
+    fileInput.disabled = true;
+    btn.disabled = true;
+    hint.textContent = 'Disponivel apenas rodando com servidor PHP (php -S localhost:8000).';
+    return;
+  }
+
+  hint.textContent = 'Selecione um arquivo .txt no formato padronizado (veja FORMATO_QUESTOES.md).';
+  btn.addEventListener('click', () => {
+    const file = fileInput.files[0];
+    if (!file) { showImportStatus('Escolha um arquivo .txt primeiro.', 'error'); return; }
+    uploadSimuladoFile(file);
+  });
+}
+
+async function uploadSimuladoFile(file, overwrite) {
+  showImportStatus('Enviando...', 'info');
+  el('btnImport').disabled = true;
+  try {
+    const fd = new FormData();
+    fd.append('simuladoFile', file);
+    if (overwrite) fd.append('overwrite', '1');
+    const res = await fetch('import_simulado.php', { method: 'POST', body: fd });
+    const data = await res.json();
+
+    if (res.status === 409 && !overwrite) {
+      el('btnImport').disabled = false;
+      if (confirm(data.error + ' Deseja sobrescrever?')) {
+        await uploadSimuladoFile(file, true);
+      } else {
+        showImportStatus('Importacao cancelada.', 'info');
+      }
+      return;
+    }
+
+    if (!data.ok) {
+      showImportStatus(data.error || 'Falha ao importar o arquivo.', 'error');
+      return;
+    }
+
+    await loadExams();
+    populateExamSelect();
+    el('examSelect').value = data.id;
+    refreshExamMeta();
+    saveSetupPrefs();
+    el('importFileInput').value = '';
+    showImportStatus(`Prova importada: ${data.title} (${data.questionCount} questoes)`, 'success');
+  } catch (e) {
+    showImportStatus('Erro de conexao ao importar. O servidor PHP esta rodando?', 'error');
+  } finally {
+    el('btnImport').disabled = false;
   }
 }
 
@@ -235,6 +392,7 @@ function renderQuestion() {
       const v = input.value;
       state.selected = (v.trim().length > 0) ? [v] : [];
       updateScore();
+      autoSaveSession();
     });
     container.appendChild(input);
   } else {
@@ -266,6 +424,7 @@ function renderQuestion() {
         }
         renderQuestion();
         updateScore();
+        autoSaveSession();
       });
       const label = document.createElement('span');
       label.className = 'optLabel';
@@ -353,9 +512,9 @@ function updateStatus() {
 // EVENTOS
 // ============================================================
 function bindExamEvents() {
-  el('btnPrevious').addEventListener('click', () => { if (current>0){current--;renderQuestion();} });
-  el('btnNext').addEventListener('click', () => { if (current<questions.length-1){current++;renderQuestion();} });
-  el('markCheckbox').addEventListener('change', () => { userState[questions[current].id].marked = el('markCheckbox').checked; });
+  el('btnPrevious').addEventListener('click', () => { if (current>0){current--;renderQuestion();autoSaveSession();} });
+  el('btnNext').addEventListener('click', () => { if (current<questions.length-1){current++;renderQuestion();autoSaveSession();} });
+  el('markCheckbox').addEventListener('change', () => { userState[questions[current].id].marked = el('markCheckbox').checked; autoSaveSession(); });
   el('btnShowAnswer').addEventListener('click', () => {
     const s = userState[questions[current].id]; s.showAnswer = !s.showAnswer; renderQuestion();
   });
@@ -445,26 +604,30 @@ function openReview(mode) {
 // ============================================================
 // SALVAR / CARREGAR SESSAO
 // ============================================================
-function buildSessionPayload() { return { config, current, userState, elapsedSeconds }; }
-
-async function saveSession() {
-  const payload = buildSessionPayload();
-  localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-  try {
-    const res = await fetch('save_session.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    if (res.ok) { alert('Sessao salva (local + servidor)!'); return; }
-  } catch(e){}
-  alert('Sessao salva localmente no navegador!');
+function buildSessionPayload() {
+  return { active: true, savedAt: Date.now(), config, current, userState, elapsedSeconds };
 }
 
-async function continueSession() {
-  let data = null;
-  try { const res = await fetch('load_session.php'); if (res.ok){ const d = await res.json(); if (d.ok!==false) data=d; } } catch(e){}
-  if (!data) { const local = localStorage.getItem(SESSION_KEY); if (local){ try{ data=JSON.parse(local); }catch(e){} } }
-  if (!data || !data.config) { alert('Nenhuma sessao salva encontrada.'); return; }
+// localStorage e sempre a fonte de verdade (evita misturar sessao de
+// usuarios diferentes no arquivo unico sessions/session.json do servidor).
+// O servidor so e consultado se nao houver nada salvo localmente.
+async function loadSessionData() {
+  const local = localStorage.getItem(SESSION_KEY);
+  if (local) {
+    try { const parsed = JSON.parse(local); if (parsed && parsed.config) return parsed; } catch (e) {}
+  }
+  try {
+    const res = await fetch('load_session.php');
+    if (res.ok) {
+      const d = await res.json();
+      if (d && d.ok !== false && d.config) return d;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function restoreSessionFromData(data, ex) {
   config = data.config;
-  const ex = EXAMS_DATA.exams.find(e => e.id === config.examId);
-  if (!ex) { alert('A prova desta sessao nao foi encontrada no codigo.'); return; }
   allQuestions = ex.questions;
   questions = config.questionIds.map(id => ex.questions.find(q => q.id === id)).filter(Boolean);
   current = data.current || 0;
@@ -477,7 +640,85 @@ async function continueSession() {
       userState[q.id].choiceOrder = buildChoiceOrder(q, config.randomizeChoices);
     }
   });
+  sessionActive = true;
   enterExamScreen();
+}
+
+let serverSaveTimer = null;
+const SERVER_SAVE_DEBOUNCE_MS = 4000;
+
+// Auto-save: grava no localStorage a cada mudanca relevante (sincrono) e
+// agenda um envio ao servidor com debounce, para nao disparar uma
+// requisicao HTTP a cada clique/tecla.
+function autoSaveSession() {
+  if (!sessionActive) return;
+  const payload = buildSessionPayload();
+  localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+  clearTimeout(serverSaveTimer);
+  serverSaveTimer = setTimeout(() => flushServerSave(payload), SERVER_SAVE_DEBOUNCE_MS);
+}
+
+async function flushServerSave(payload) {
+  try {
+    await fetch('save_session.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  } catch (e) {
+    // sem servidor: sem problema, o localStorage ja tem o estado atual
+  }
+}
+
+// Garante que o ultimo estado chegue ao servidor mesmo se o debounce
+// nao tiver disparado ainda (aba fechada/trocada de fundo).
+function bindAutosaveLifecycleHooks() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && sessionActive) {
+      const payload = buildSessionPayload();
+      localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('save_session.php', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+      }
+    }
+  });
+}
+
+async function saveSession() {
+  clearTimeout(serverSaveTimer);
+  const payload = buildSessionPayload();
+  localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+  try {
+    const res = await fetch('save_session.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if (res.ok) { alert('Sessao salva (local + servidor)!'); return; }
+  } catch(e){}
+  alert('Sessao salva localmente no navegador!');
+}
+
+async function continueSession() {
+  const data = await loadSessionData();
+  if (!data || !data.config) { alert('Nenhuma sessao salva encontrada.'); return; }
+  const ex = EXAMS_DATA.exams.find(e => e.id === data.config.examId);
+  if (!ex) { alert('A prova desta sessao nao foi encontrada no codigo.'); return; }
+  restoreSessionFromData(data, ex);
+}
+
+// Tenta retomar automaticamente uma sessao ativa ao carregar a pagina
+// (ex: apos dar refresh no meio de uma prova). So dispara se a sessao
+// estiver marcada como "active" (nao ocorre para provas ja finalizadas).
+async function tryAutoRestoreSession() {
+  const data = await loadSessionData();
+  if (!data || !data.config || data.active !== true) return false;
+  const ex = EXAMS_DATA.exams.find(e => e.id === data.config.examId);
+  if (!ex) return false;
+  restoreSessionFromData(data, ex);
+  return true;
+}
+
+function clearActiveSession() {
+  sessionActive = false;
+  clearTimeout(serverSaveTimer);
+  localStorage.removeItem(SESSION_KEY);
+  fetch('save_session.php', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ active: false, endedAt: Date.now() })
+  }).catch(() => {});
 }
 
 // ============================================================
@@ -510,6 +751,7 @@ function endExam() {
   clearInterval(timerInterval);
   const r = computeResults();
   saveToHistory(r);
+  clearActiveSession();
   showScoreReport(r);
 }
 
@@ -685,6 +927,7 @@ function startCustomRetake(examId, ids) {
     choiceOrder: buildChoiceOrder(q, keepRandChoices)
   });
   elapsedSeconds = 0;
+  sessionActive = true;
   el('reportOverlay').style.display = 'none';
   el('historyOverlay').style.display = 'none';
   enterExamScreen();
@@ -697,4 +940,6 @@ function startCustomRetake(examId, ids) {
   await loadExams();
   initSetupScreen();
   bindExamEvents();
+  bindAutosaveLifecycleHooks();
+  await tryAutoRestoreSession();
 })();
