@@ -19,6 +19,7 @@ let sessionActive = false;
 const SESSION_KEY = 'vce_session';
 const HISTORY_KEY = 'vce_history';
 const THEME_KEY = 'vce_theme';
+const STATS_KEY = 'vce_stats';
 
 // Escapa texto que vem de dados (nome do candidato, titulo da prova,
 // enunciados de .txt importados) antes de inserir em innerHTML, para
@@ -69,16 +70,79 @@ function currentTheme() {
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(THEME_KEY, theme);
-  const btn = el('themeToggle');
-  if (btn) btn.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+  const label = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+  document.querySelectorAll('.themeToggleBtn').forEach(btn => { btn.textContent = label; });
 }
 
 function initThemeToggle() {
-  const btn = el('themeToggle');
-  if (!btn) return;
-  btn.textContent = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
-  btn.addEventListener('click', () => {
-    applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  const label = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
+  document.querySelectorAll('.themeToggleBtn').forEach(btn => {
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+    });
+  });
+}
+
+// ============================================================
+// TAMANHO DA FONTE (ACESSIBILIDADE)
+// ============================================================
+const FONT_SIZE_KEY = 'vce_font_size';
+const FONT_SIZE_MIN = 14;
+const FONT_SIZE_MAX = 26;
+const FONT_SIZE_DEFAULT = 16;
+const FONT_SIZE_STEP = 2;
+
+function currentFontSize() {
+  const saved = parseInt(localStorage.getItem(FONT_SIZE_KEY), 10);
+  return (saved >= FONT_SIZE_MIN && saved <= FONT_SIZE_MAX) ? saved : FONT_SIZE_DEFAULT;
+}
+
+function applyFontSize(px) {
+  const size = Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, px));
+  document.documentElement.style.fontSize = size + 'px';
+  localStorage.setItem(FONT_SIZE_KEY, String(size));
+  document.querySelectorAll('.fontDecBtn').forEach(b => { b.disabled = size <= FONT_SIZE_MIN; });
+  document.querySelectorAll('.fontIncBtn').forEach(b => { b.disabled = size >= FONT_SIZE_MAX; });
+}
+
+function initFontSizeControls() {
+  applyFontSize(currentFontSize());
+  document.querySelectorAll('.fontDecBtn').forEach(b => {
+    b.addEventListener('click', () => applyFontSize(currentFontSize() - FONT_SIZE_STEP));
+  });
+  document.querySelectorAll('.fontIncBtn').forEach(b => {
+    b.addEventListener('click', () => applyFontSize(currentFontSize() + FONT_SIZE_STEP));
+  });
+}
+
+// ============================================================
+// LOG DE ERROS DO CLIENTE (enviado ao servidor quando disponivel)
+// ============================================================
+function bindClientErrorLogging() {
+  function send(payload) {
+    if (!serverAvailable) return;
+    try {
+      fetch('log_client.php', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    } catch (e) {}
+  }
+  window.addEventListener('error', (e) => {
+    send({
+      type: 'error',
+      message: String(e.message || '').slice(0, 500),
+      source: String(e.filename || '').slice(0, 200),
+      line: e.lineno || 0,
+      col: e.colno || 0
+    });
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    send({
+      type: 'unhandledrejection',
+      message: String((e.reason && e.reason.message) || e.reason || '').slice(0, 500)
+    });
   });
 }
 
@@ -120,6 +184,7 @@ function initSetupScreen() {
   el('btnStart').addEventListener('click', startExam);
   el('btnContinue').addEventListener('click', continueSession);
   el('btnHistory').addEventListener('click', () => openHistory());
+  el('btnStats').addEventListener('click', () => openStats());
   initImportUI();
 }
 
@@ -360,7 +425,7 @@ function initImportUI() {
     return;
   }
 
-  hint.textContent = 'Selecione um arquivo .txt no formato padronizado (veja FORMATO_QUESTOES.md).';
+  hint.textContent = 'Selecione o arquivo .txt do simulado no formato padronizado e clique em Enviar.';
   btn.addEventListener('click', () => {
     const file = fileInput.files[0];
     if (!file) { showImportStatus('Escolha um arquivo .txt primeiro.', 'error'); return; }
@@ -604,6 +669,10 @@ function bindExamEvents() {
   el('btnClearHistory').addEventListener('click', () => {
     if (confirm('Limpar todo o historico de notas?')) { localStorage.removeItem(HISTORY_KEY); openHistory(); }
   });
+
+  // Stats buttons
+  el('closeStats').addEventListener('click', () => { el('statsOverlay').style.display='none'; });
+  el('btnClearStats').addEventListener('click', clearStatsForSelected);
 }
 
 function buildCalculator() {
@@ -808,6 +877,7 @@ function endExam() {
   clearInterval(timerInterval);
   const r = computeResults();
   saveToHistory(r);
+  recordStats(r);
   clearActiveSession();
   showScoreReport(r);
 }
@@ -948,6 +1018,216 @@ function openHistory() {
   el('historyOverlay').style.display = 'flex';
 }
 
+// ============================================================
+// ESTATISTICAS DE ESTUDO (agregadas por prova e por questao)
+// ============================================================
+function getStats() {
+  try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch (e) { return {}; }
+}
+
+function saveStatsData(stats) {
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+// Chamado ao finalizar cada prova: acumula, por questao, quantas vezes ela
+// foi vista, acertada, errada ou deixada em branco - e a serie de notas.
+function recordStats(r) {
+  const stats = getStats();
+  const ex = stats[config.examId] || { title: '', attempts: 0, scores: [], questions: {} };
+  // guarda o titulo "limpo" (sem o sufixo de refazer)
+  const cleanTitle = config.examTitle.replace(/ \(Refazer\)$/, '');
+  if (!ex.title || !/\(Refazer\)$/.test(config.examTitle)) ex.title = cleanTitle;
+  ex.attempts++;
+  ex.scores.push({ score: r.scaledScore, passing: r.passing, date: Date.now() });
+  ex.scores = ex.scores.slice(-50);
+  questions.forEach(q => {
+    const qs = ex.questions[q.id] || { seen: 0, correct: 0, wrong: 0, blank: 0 };
+    qs.seen++;
+    if (!isAnswered(q)) qs.blank++;
+    else if (isCorrect(q)) qs.correct++;
+    else qs.wrong++;
+    ex.questions[q.id] = qs;
+  });
+  stats[config.examId] = ex;
+  saveStatsData(stats);
+}
+
+function questionSnippet(examId, qid) {
+  const ex = EXAMS_DATA.exams.find(e => e.id === examId);
+  const q = ex && ex.questions.find(qq => qq.id === qid);
+  if (!q) return '';
+  return q.question.slice(0, 90).replace(/\n/g, ' ').replace(/```/g, '');
+}
+
+function openStats(examId) {
+  const stats = getStats();
+  const ids = Object.keys(stats);
+  const body = el('statsBody');
+
+  if (!ids.length) {
+    body.innerHTML = '<div class="statsEmpty">Nenhuma estatistica registrada ainda.<br>' +
+      'Finalize uma prova para comecar a acompanhar seu desempenho.</div>';
+    el('statsOverlay').style.display = 'flex';
+    return;
+  }
+
+  const selected = (examId && stats[examId]) ? examId : ids[0];
+  const ex = stats[selected];
+  const loadedExam = EXAMS_DATA.exams.find(e => e.id === selected);
+
+  // ---------- agregados gerais ----------
+  let seen = 0, correct = 0, wrong = 0, blank = 0;
+  Object.values(ex.questions).forEach(qs => {
+    seen += qs.seen; correct += qs.correct; wrong += qs.wrong; blank += qs.blank;
+  });
+  const pctCorrect = seen ? Math.round((correct / seen) * 100) : 0;
+  const pctWrong = seen ? Math.round((wrong / seen) * 100) : 0;
+  const pctBlank = Math.max(0, 100 - pctCorrect - pctWrong);
+
+  const scores = ex.scores || [];
+  const avg = scores.length ? Math.round(scores.reduce((s, x) => s + x.score, 0) / scores.length) : 0;
+  const best = scores.length ? Math.max(...scores.map(x => x.score)) : 0;
+  const last = scores.length ? scores[scores.length - 1].score : 0;
+  const passedCount = scores.filter(x => x.score >= (x.passing || 500)).length;
+
+  // ---------- seletor de prova ----------
+  const options = ids.map(id =>
+    `<option value="${escapeHtml(id)}" ${id === selected ? 'selected' : ''}>${escapeHtml(stats[id].title || id)}</option>`
+  ).join('');
+
+  // ---------- grafico de rosca (acertos/erros/brancos) ----------
+  const degC = pctCorrect * 3.6, degW = degC + pctWrong * 3.6;
+  const donut = `
+    <div class="donutWrap">
+      <div class="donut" style="background: conic-gradient(var(--pass) 0deg ${degC}deg, var(--fail) ${degC}deg ${degW}deg, var(--border) ${degW}deg 360deg);">
+        <div class="donutHole"><span class="donutPct">${pctCorrect}%</span><span class="donutLabel">acerto</span></div>
+      </div>
+      <div class="donutLegend">
+        <div><span class="legendDot" style="background:var(--pass)"></span> Acertos: ${correct} (${pctCorrect}%)</div>
+        <div><span class="legendDot" style="background:var(--fail)"></span> Erros: ${wrong} (${pctWrong}%)</div>
+        <div><span class="legendDot" style="background:var(--border)"></span> Em branco: ${blank} (${pctBlank}%)</div>
+        <div class="legendTotal">${seen} respostas em ${ex.attempts} tentativa(s)</div>
+      </div>
+    </div>`;
+
+  // ---------- evolucao das notas (ultimas 12) ----------
+  const lastScores = scores.slice(-12);
+  const evoBars = lastScores.map(s => {
+    const h = Math.max(4, Math.round((s.score / 1000) * 100));
+    const cls = s.score >= (s.passing || 500) ? 'pass' : 'fail';
+    return `<div class="evoBar ${cls}" style="height:${h}%" title="${s.score}/1000"><span>${s.score}</span></div>`;
+  }).join('');
+  const evolution = lastScores.length ? `
+    <h3>Evolucao das notas (ultimas ${lastScores.length})</h3>
+    <div class="evoChart">${evoBars}</div>` : '';
+
+  // ---------- desempenho por topico ----------
+  let topicSection = '';
+  if (loadedExam) {
+    const byTopic = {};
+    loadedExam.questions.forEach(q => {
+      const qs = ex.questions[q.id];
+      if (!qs) return;
+      if (!byTopic[q.topic]) byTopic[q.topic] = { seen: 0, correct: 0 };
+      byTopic[q.topic].seen += qs.seen;
+      byTopic[q.topic].correct += qs.correct;
+    });
+    const rows = Object.keys(byTopic).sort((a, b) => a - b).map(t => {
+      const d = byTopic[t];
+      const p = d.seen ? Math.round((d.correct / d.seen) * 100) : 0;
+      return `<div class="qStatRow">
+        <span class="qStatLabel">Topico ${escapeHtml(t)}</span>
+        <div class="qStatTrack"><div class="qStatFill ${p >= 60 ? 'good' : 'bad'}" style="width:${p}%"></div></div>
+        <span class="qStatPct">${p}%</span>
+      </div>`;
+    }).join('');
+    if (rows) topicSection = `<h3>Desempenho por topico</h3>${rows}`;
+  }
+
+  // ---------- questoes que mais erra / mais acerta ----------
+  const entries = Object.entries(ex.questions).map(([qid, qs]) => ({ qid: +qid, ...qs }));
+  const worst = entries.filter(q => q.wrong > 0)
+    .sort((a, b) => b.wrong - a.wrong || (b.wrong / b.seen) - (a.wrong / a.seen))
+    .slice(0, 8);
+  const bestQ = entries.filter(q => q.correct > 0)
+    .sort((a, b) => (b.correct / b.seen) - (a.correct / a.seen) || b.correct - a.correct)
+    .slice(0, 8);
+
+  function qRows(list, kind) {
+    return list.map(q => {
+      const rate = Math.round(((kind === 'bad' ? q.wrong : q.correct) / q.seen) * 100);
+      const snip = questionSnippet(selected, q.qid);
+      const detail = kind === 'bad' ? `${q.wrong} erro(s) em ${q.seen}` : `${q.correct} acerto(s) em ${q.seen}`;
+      return `<div class="qStatRow" title="${escapeHtml(snip)}">
+        <span class="qStatLabel">Q${q.qid}</span>
+        <div class="qStatTrack"><div class="qStatFill ${kind}" style="width:${rate}%"></div></div>
+        <span class="qStatPct">${rate}%</span>
+        <span class="qStatDetail">${detail}${snip ? ' - ' + escapeHtml(snip) + '...' : ''}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const worstSection = worst.length
+    ? `<h3>Questoes que voce mais erra</h3>${qRows(worst, 'bad')}`
+    : '';
+  const bestSection = bestQ.length
+    ? `<h3>Questoes que voce mais acerta</h3>${qRows(bestQ, 'good')}`
+    : '';
+
+  // botao de treino: refaz as questoes mais erradas (se a prova estiver carregada)
+  const trainIds = loadedExam
+    ? entries.filter(q => q.wrong > 0)
+        .sort((a, b) => b.wrong - a.wrong)
+        .map(q => q.qid)
+        .filter(qid => loadedExam.questions.some(qq => qq.id === qid))
+        .slice(0, 15)
+    : [];
+  const trainBtn = trainIds.length
+    ? `<button id="btnTrainWorst" class="trainBtn">Treinar as ${trainIds.length} questoes que voce mais erra</button>`
+    : '';
+
+  body.innerHTML = `
+    <div class="statsHeader">
+      <label for="statsExamSelect"><strong>Prova:</strong></label>
+      <select id="statsExamSelect">${options}</select>
+    </div>
+    <div class="reportStats">
+      <span class="statChip">Tentativas: ${ex.attempts}</span>
+      <span class="statChip">Media: ${avg}/1000</span>
+      <span class="statChip ok">Melhor: ${best}/1000</span>
+      <span class="statChip">Ultima: ${last}/1000</span>
+      <span class="statChip ${passedCount ? 'ok' : 'warn'}">Aprovacoes: ${passedCount}/${scores.length}</span>
+    </div>
+    ${donut}
+    ${evolution}
+    ${topicSection}
+    ${worstSection}
+    ${trainBtn}
+    ${bestSection}
+    ${loadedExam ? '' : '<p class="statsNote">Obs: esta prova nao esta carregada no app, entao topicos e enunciados nao podem ser exibidos.</p>'}
+  `;
+
+  el('statsExamSelect').addEventListener('change', (e) => openStats(e.target.value));
+  const tb = el('btnTrainWorst');
+  if (tb) tb.addEventListener('click', () => {
+    el('statsOverlay').style.display = 'none';
+    startCustomRetake(selected, trainIds);
+  });
+
+  el('statsOverlay').style.display = 'flex';
+  el('statsOverlay').dataset.examId = selected;
+}
+
+function clearStatsForSelected() {
+  const examId = el('statsOverlay').dataset.examId;
+  const stats = getStats();
+  if (!examId || !stats[examId]) return;
+  if (!confirm(`Limpar as estatisticas de "${stats[examId].title || examId}"?`)) return;
+  delete stats[examId];
+  saveStatsData(stats);
+  openStats();
+}
+
 // Refazer a partir do relatorio atual
 function retake(kind) {
   const ids = kind === 'wrong'
@@ -995,6 +1275,8 @@ function startCustomRetake(examId, ids) {
 // ============================================================
 (async function init() {
   initThemeToggle();
+  initFontSizeControls();
+  bindClientErrorLogging();
   await loadExams();
   initSetupScreen();
   bindExamEvents();

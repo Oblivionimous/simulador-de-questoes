@@ -6,13 +6,17 @@
 <title>Simulado LPIC-2 - VCE Web Player</title>
 <link rel="stylesheet" href="style.css">
 <script>
-// Aplica o tema salvo antes de renderizar a pagina, para evitar o "flash"
-// de tela clara antes de trocar para o modo escuro.
+// Aplica o tema e o tamanho de fonte salvos antes de renderizar a pagina,
+// para evitar o "flash" de tela clara/fonte pequena antes do ajuste.
 (function () {
   try {
     var saved = localStorage.getItem('vce_theme');
     if (saved === 'dark' || saved === 'light') {
       document.documentElement.setAttribute('data-theme', saved);
+    }
+    var fs = parseInt(localStorage.getItem('vce_font_size'), 10);
+    if (fs >= 14 && fs <= 26) {
+      document.documentElement.style.fontSize = fs + 'px';
     }
   } catch (e) {}
 })();
@@ -20,11 +24,18 @@
 </head>
 <body>
 
-<button id="themeToggle" type="button">Modo escuro</button>
-
 <!-- ===================== TELA INICIAL ===================== -->
 <div id="setupScreen">
-  <div class="titlebar">VCE Web Player</div>
+  <div class="titlebar">
+    <span>VCE Web Player</span>
+    <div class="titlebarActions">
+      <div class="fontSizeControls">
+        <button class="fontSizeBtn fontDecBtn" type="button" title="Diminuir tamanho da fonte">A-</button>
+        <button class="fontSizeBtn fontIncBtn" type="button" title="Aumentar tamanho da fonte">A+</button>
+      </div>
+      <button class="themeToggleBtn" type="button">Modo escuro</button>
+    </div>
+  </div>
 
   <div class="setupWrap">
     <div class="setupCard">
@@ -33,10 +44,11 @@
       <div class="field">
         <label>Prova:</label>
         <select id="examSelect"></select>
-        <button id="btnImportToggle" type="button" title="Importar uma nova prova a partir de um arquivo .txt">Importar .txt</button>
+        <button id="btnImportToggle" type="button" title="Importar um novo simulado a partir de um arquivo .txt">Importar Simulado</button>
       </div>
 
       <div id="importPanel" class="importPanel" style="display:none;">
+        <a class="importHelpLink" href="ajuda-formato.html" target="_blank" rel="noopener">Como montar o arquivo .txt do simulado (formato e conversão por IA)</a>
         <p class="importHint" id="importHint"></p>
         <div class="field">
           <input type="file" id="importFileInput" accept=".txt">
@@ -124,6 +136,7 @@
         <button id="btnStart" class="primary">Iniciar</button>
         <button id="btnContinue">Continuar sessao salva</button>
         <button id="btnHistory">Historico de Notas</button>
+        <button id="btnStats">Estatisticas</button>
       </div>
     </div>
   </div>
@@ -133,7 +146,14 @@
 <div id="examScreen" style="display:none;">
   <div class="titlebar">
     <span id="examTitle">Custom Exam - VCE Web Player</span>
-    <span id="timerDisplay" class="timerDisplay" style="display:none;"></span>
+    <div class="titlebarActions">
+      <span id="timerDisplay" class="timerDisplay" style="display:none;"></span>
+      <div class="fontSizeControls">
+        <button class="fontSizeBtn fontDecBtn" type="button" title="Diminuir tamanho da fonte">A-</button>
+        <button class="fontSizeBtn fontIncBtn" type="button" title="Aumentar tamanho da fonte">A+</button>
+      </div>
+      <button class="themeToggleBtn" type="button">Modo escuro</button>
+    </div>
   </div>
 
   <div class="topbar">
@@ -220,6 +240,18 @@
     <div class="reportButtons">
       <button id="btnClearHistory">Limpar Historico</button>
       <button id="closeHistory" class="primary">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ESTATISTICAS ===================== -->
+<div class="reportOverlay" id="statsOverlay" style="display:none;">
+  <div class="reportBox">
+    <div class="reportTitleBar">Estatisticas de Estudo</div>
+    <div class="reportBody" id="statsBody"></div>
+    <div class="reportButtons">
+      <button id="btnClearStats">Limpar Estatisticas</button>
+      <button id="closeStats" class="primary">Fechar</button>
     </div>
   </div>
 </div>

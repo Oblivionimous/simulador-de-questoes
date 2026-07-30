@@ -6,8 +6,18 @@
 // ============================================================
 header('Content-Type: application/json; charset=utf-8');
 require __DIR__ . '/lib_exams.php';
+require __DIR__ . '/lib_log.php';
 
 function respond($status, $data) {
+    if (empty($data['ok'])) {
+        ve_log('error', 'import_simulado.php falhou (' . $status . '): ' . ($data['error'] ?? ''));
+    } else {
+        ve_log('access', 'POST import_simulado.php ok', [
+            'filename' => $data['filename'] ?? '',
+            'id' => $data['id'] ?? '',
+            'questions' => $data['questionCount'] ?? 0
+        ]);
+    }
     http_response_code($status);
     echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;

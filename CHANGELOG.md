@@ -10,6 +10,98 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Estatísticas de estudo e polimento visual
+
+**Motivação:** dar visibilidade de onde reforçar os estudos — percentuais,
+questões mais erradas/acertadas e estatística geral por prova — além de
+deixar o layout mais bonito.
+
+### Adicionado
+- **Estatísticas de estudo** (novo botão "Estatisticas" na tela inicial,
+  overlay próprio): para cada prova já utilizada mostra —
+  - resumo em chips: tentativas, nota média, melhor nota, última nota e
+    total de aprovações;
+  - **gráfico de rosca** (CSS `conic-gradient`, sem bibliotecas) com o
+    percentual de acertos, erros e respostas em branco acumulados;
+  - **gráfico de barras com a evolução das últimas 12 notas** (verde/
+    vermelho conforme aprovado ou não);
+  - **desempenho por tópico** com barras de percentual;
+  - ranking das **questões que você mais erra** e das **que mais acerta**
+    (percentual, contagem e trecho do enunciado);
+  - botão **"Treinar as questões que você mais erra"**, que abre na hora
+    uma prova personalizada só com elas (reusa o modo refazer existente);
+  - seletor para alternar entre as provas com dados e botão para limpar as
+    estatísticas da prova exibida.
+- Coleta automática: ao finalizar qualquer prova, `recordStats()` acumula
+  por questão (vista/acertada/errada/em branco) e a série de notas na
+  chave `vce_stats` do `localStorage` — funciona também no modo offline.
+
+### Alterado (polimento visual)
+- Transições suaves em todos os botões + efeito de "pressionar";
+  contorno visível de foco para navegação por teclado (`:focus-visible`).
+- Cards com cantos mais arredondados e sombras mais suaves; título dos
+  cards sublinhado com a cor de destaque (verde).
+- Alternativas das questões com área de clique maior e borda no hover;
+  caixa de resposta com barra lateral de destaque.
+- Barra de título com sombra sutil; chips de estatísticas em negrito;
+  overlays maiores e com sombra mais profunda.
+
+### Testes realizados
+- Playwright: 3 tentativas com resultados diferentes na prova de exemplo →
+  estatísticas conferidas número a número (média 444 para notas 333/333/667,
+  rosca 44% = 4 acertos em 9 respostas, tópico 1 em 67%, Q1 com 67% de
+  erro, Q2 com 100% de acerto); botão de treino abriu prova personalizada
+  contendo exatamente a questão errada; visual verificado em modo claro e
+  escuro por screenshot; sem erros de console.
+
+## 2026-07-30 — Acessibilidade, página de ajuda do formato, logs e ajustes de UI
+
+**Motivação:** pedido do usuário — página explicando como montar o `.txt`
+(e que uma IA pode fazer a conversão), renomear o botão de importar,
+corrigir o botão de tema que cobria o timer, opção de aumentar a fonte
+para quem tem dificuldade de enxergar, barra de título maior, e um
+diretório de logs de acessos/erros/problemas.
+
+### Adicionado
+- **Página de ajuda `ajuda-formato.html`**: explica o formato do `.txt`
+  (bloco META, campos de cada questão, regras) com exemplos, e orienta a
+  pedir a conversão das questões para uma IA (ChatGPT/Claude/Gemini) usando
+  o `FORMATO_QUESTOES.md`. Linkada no painel de importação da tela inicial;
+  respeita o tema e o tamanho de fonte escolhidos no app.
+- **Controle de tamanho de fonte (acessibilidade)**: botões A-/A+ na barra
+  de título (tela inicial, tela da prova e página de ajuda) escalam toda a
+  interface de 14px a 26px. A escolha é salva (`vce_font_size`) e aplicada
+  antes da renderização (sem "pulo" visual). Implementado convertendo os
+  tamanhos de fonte do CSS de `px` para `rem`.
+- **Diretório de logs (`vce-web/logs/`, criado em runtime)** via novo
+  `lib_log.php`, com arquivos diários por canal: `access-*.log` (carga de
+  provas, importações, leitura de sessão, com IP/horário), `error-*.log`
+  (falhas dos endpoints) e `client-*.log` (erros de JavaScript do navegador,
+  enviados pelo novo endpoint `log_client.php` com limite de 4KB por
+  mensagem). Em Apache, a pasta recebe `.htaccess` bloqueando acesso web.
+- `.gitignore` na raiz, excluindo `vce-web/sessions/` e `vce-web/logs/`.
+
+### Corrigido
+- **Botão de tema sobrepondo o timer**: o botão "Modo escuro/claro" era
+  fixo (position: fixed) e cobria o "Tempo restante" e outras informações
+  da barra. Agora ele (e os novos A-/A+) fazem parte da própria barra de
+  título como itens flex, sem sobrepor nada (verificado por teste de
+  colisão de bounding boxes no Playwright).
+
+### Alterado
+- Botão de importação renomeado de "Importar .txt" para **"Importar
+  Simulado"**.
+- **Barra de título maior e mais legível**: padding aumentado e fonte de
+  0,81rem para 1,1rem.
+- Textos do painel de importação ajustados (dica curta + link de ajuda).
+
+### Testes realizados
+- Playwright: A+/A- escalam a página e persistem após reload; timer não é
+  mais sobreposto (teste de interseção de retângulos); página de ajuda
+  abre com tema/fonte corretos; erro de JS proposital aparece em
+  `logs/client-*.log`; acessos registrados em `logs/access-*.log`.
+- `php -l` e `node --check` em todos os arquivos alterados.
+
 ## 2026-07-30 — Revisão de segurança/robustez e reposicionamento do import
 
 **Motivação:** análise geral do sistema em busca de falhas de segurança e
