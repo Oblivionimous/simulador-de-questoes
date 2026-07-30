@@ -18,6 +18,7 @@ let sessionActive = false;
 
 const SESSION_KEY = 'vce_session';
 const HISTORY_KEY = 'vce_history';
+const THEME_KEY = 'vce_theme';
 const SETUP_PREFS_KEY = 'vce_setup_prefs';
 const el = (id) => document.getElementById(id);
 
@@ -44,6 +45,32 @@ async function loadExams() {
   } catch (e) {
     // sem servidor PHP: usa o exams.js estatico (fallback)
   }
+}
+
+// ============================================================
+// TEMA (MODO ESCURO)
+// ============================================================
+function currentTheme() {
+  const attr = document.documentElement.getAttribute('data-theme');
+  if (attr === 'dark' || attr === 'light') return attr;
+  // sem preferencia salva: segue o esquema de cores do sistema operacional
+  return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  const btn = el('themeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+}
+
+function initThemeToggle() {
+  const btn = el('themeToggle');
+  if (!btn) return;
+  btn.textContent = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
+  btn.addEventListener('click', () => {
+    applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  });
 }
 
 // ============================================================
@@ -597,7 +624,7 @@ function openReview(mode) {
     row.addEventListener('click', () => { current=idx; renderQuestion(); el('reviewOverlay').style.display='none'; });
     list.appendChild(row);
   });
-  if (shown===0) list.innerHTML = '<div style="color:#888;padding:12px;">Nenhuma questao nesta categoria.</div>';
+  if (shown===0) list.innerHTML = '<div style="color:var(--text-muted);padding:12px;">Nenhuma questao nesta categoria.</div>';
   el('reviewOverlay').style.display = 'flex';
 }
 
@@ -762,7 +789,7 @@ function showScoreReport(r) {
   const em = Math.floor(elapsedSeconds/60), es = elapsedSeconds%60;
   const elapsedStr = `${em}:${String(es).padStart(2,'0')}`;
 
-  const gradeColor = r.passed ? '#1a7f1a' : '#c0392b';
+  const gradeColor = r.passed ? 'var(--pass)' : 'var(--fail)';
   const gradeText = r.passed ? 'APROVADO' : 'REPROVADO';
 
   // barra: sua nota vs nota minima (escala 0-1000)
@@ -856,11 +883,11 @@ function openHistory() {
   const hist = getHistory();
   const body = el('historyBody');
   if (!hist.length) {
-    body.innerHTML = '<div style="color:#888;padding:20px;text-align:center;">Nenhuma tentativa registrada ainda.</div>';
+    body.innerHTML = '<div style="color:var(--text-muted);padding:20px;text-align:center;">Nenhuma tentativa registrada ainda.</div>';
   } else {
     let rows = '';
     hist.forEach((h, i) => {
-      const grade = h.passed ? '<span style="color:#1a7f1a;font-weight:700;">Aprovado</span>' : '<span style="color:#c0392b;font-weight:700;">Reprovado</span>';
+      const grade = h.passed ? '<span style="color:var(--pass);font-weight:700;">Aprovado</span>' : '<span style="color:var(--fail);font-weight:700;">Reprovado</span>';
       rows += `<tr>
         <td>${h.date}</td><td>${h.time}</td><td>${h.candidate}</td>
         <td>${h.examTitle}</td>
@@ -937,6 +964,7 @@ function startCustomRetake(examId, ids) {
 // INIT
 // ============================================================
 (async function init() {
+  initThemeToggle();
   await loadExams();
   initSetupScreen();
   bindExamEvents();

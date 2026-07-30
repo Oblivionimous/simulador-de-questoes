@@ -5,8 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simulado LPIC-2 - VCE Web Player</title>
 <link rel="stylesheet" href="style.css">
+<script>
+// Aplica o tema salvo antes de renderizar a pagina, para evitar o "flash"
+// de tela clara antes de trocar para o modo escuro.
+(function () {
+  try {
+    var saved = localStorage.getItem('vce_theme');
+    if (saved === 'dark' || saved === 'light') {
+      document.documentElement.setAttribute('data-theme', saved);
+    }
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
+
+<button id="themeToggle" type="button">Modo escuro</button>
 
 <!-- ===================== TELA INICIAL ===================== -->
 <div id="setupScreen">

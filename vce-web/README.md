@@ -35,6 +35,10 @@ questões) e um simulado de demonstração com 3 questões.
 - **Importar uma prova nova pelo navegador**: envie um `.txt` no formato
   padronizado direto pela tela inicial (modo servidor PHP), sem precisar
   editar arquivos manualmente no servidor.
+- **Modo escuro**: botão no canto superior direito (visível em todas as
+  telas) alterna entre claro e escuro. A escolha fica salva no navegador
+  (`localStorage`) e, se você nunca escolheu nada, o app já abre seguindo o
+  tema do sistema operacional.
 - **Relatório de nota (Score Report)** ao finalizar: nota em escala 0-1000,
   gráfico comparando sua nota com a nota mínima, aprovado/reprovado,
   desempenho por tópico, e opção de impressão.

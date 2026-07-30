@@ -10,6 +10,40 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Modo escuro
+
+**Motivação:** oferecer uma opção de tema escuro para quem usa o simulador
+à noite ou prefere interfaces escuras.
+
+### Adicionado
+- Botão "Modo escuro"/"Modo claro" fixo no canto superior direito
+  (`#themeToggle`), visível em todas as telas (setup, exame e overlays).
+  A escolha é salva em `localStorage` (`vce_theme`) e restaurada a cada
+  carregamento; sem escolha salva, o app segue o tema do sistema
+  operacional (`prefers-color-scheme`).
+- Script inline no `<head>` de `index.html` que aplica o tema salvo antes
+  da página renderizar, evitando o "flash" de tela clara antes de trocar
+  para escuro.
+
+### Alterado
+- `vce-web/style.css` reescrito para usar variáveis CSS (`--bg`, `--text`,
+  `--border`, `--pass`, `--fail` etc.) em vez de cores fixas, com um bloco
+  `:root[data-theme="dark"]` sobrescrevendo essas variáveis. Isso evitou
+  duplicar todas as regras existentes para o tema escuro.
+- `vce-web/script.js`: cores que eram geradas via HTML inline em
+  JavaScript (nota aprovado/reprovado no relatório e no histórico) agora
+  usam `var(--pass)`/`var(--fail)` em vez de códigos hexadecimais fixos,
+  para também respeitar o tema escuro.
+- Regra `@media print` ajustada para sempre imprimir em cores claras,
+  mesmo com o modo escuro ativado (evita gastar tinta imprimindo fundo
+  escuro).
+
+### Testes realizados
+- Teste end-to-end com Playwright: alternância clara→escura→clara,
+  persistência do tema após reload sem flash visível, e captura de tela
+  das telas de setup, exame, caixa de resposta e relatório de pontuação
+  em modo escuro para conferência visual de contraste.
+
 ## 2026-07-30 — Importar prova, auto-save e opções lembradas (PR #2)
 
 **Motivação:** eliminar passos manuais para adicionar uma prova nova e
