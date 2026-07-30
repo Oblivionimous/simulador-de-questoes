@@ -186,7 +186,7 @@ body {
   gap: 4px;
 }
 
-.fontSizeBtn, .themeToggleBtn {
+.fontSizeBtn, .themeToggleBtn, .settingsBtn {
   padding: 5px 10px;
   border: 1px solid var(--border-strong);
   background: var(--bg-card);
@@ -197,7 +197,7 @@ body {
   line-height: 1.2;
 }
 
-.fontSizeBtn:hover, .themeToggleBtn:hover { background: var(--bg-hover); }
+.fontSizeBtn:hover, .themeToggleBtn:hover, .settingsBtn:hover { background: var(--bg-hover); }
 .fontSizeBtn:disabled { opacity: .4; cursor: not-allowed; }
 
 /* ---------------- TELA INICIAL ---------------- */
@@ -406,18 +406,6 @@ select.numSmall { width: auto; }
 
 .itemInfo { font-weight: 600; }
 
-.headerButtons button {
-  margin-left: 8px;
-  padding: 6px 14px;
-  border: 1px solid var(--border-strong);
-  background: var(--bg-hover);
-  color: var(--text);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.headerButtons button:hover { filter: brightness(0.95); }
-
 hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
 
 .topicLine { font-weight: 600; margin-bottom: 10px; }
@@ -543,6 +531,20 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
   padding: 10px 16px;
   background: var(--bg-soft);
   border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.bbGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bbGroupCenter {
+  padding: 0 10px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
 }
 
 .bottombar button {
@@ -987,6 +989,34 @@ hr { border: none; border-top: 1px solid var(--border); margin: 10px 0 16px 0; }
 .trainBtn.blankTrain:hover { filter: brightness(1.1); }
 
 .statsNote { color: var(--text-muted); font-size: 0.8125rem; margin-top: 16px; }
+
+/* ---------------- CONFIGURACOES ---------------- */
+.settingsBox { width: 520px; }
+
+.settingsBox h3 { margin-top: 28px; }
+.settingsBox h3.settingsSectionFirst { margin-top: 0; }
+
+.settingsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.settingsRow label { font-weight: 600; }
+
+.settingsRow select {
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--bg-input);
+  color: var(--text);
+  font-size: 0.933rem;
+  min-width: 220px;
+}
+
+.settingsNote { color: var(--text-muted); font-size: 0.8125rem; margin-top: 14px; }
 
 @media print {
   :root, :root[data-theme="dark"] {

@@ -34,6 +34,7 @@
         <button class="fontSizeBtn fontIncBtn" type="button" title="Aumentar tamanho da fonte">A+</button>
       </div>
       <button class="themeToggleBtn" type="button">Modo escuro</button>
+      <button class="settingsBtn" type="button" title="Configuracoes">&#9881; Configuracoes</button>
     </div>
   </div>
 
@@ -153,6 +154,7 @@
         <button class="fontSizeBtn fontIncBtn" type="button" title="Aumentar tamanho da fonte">A+</button>
       </div>
       <button class="themeToggleBtn" type="button">Modo escuro</button>
+      <button class="settingsBtn" type="button" title="Configuracoes">&#9881;</button>
     </div>
   </div>
 
@@ -166,10 +168,6 @@
       <div class="itemInfo">
         Item <span id="itemIndex">1</span> de <span id="itemTotal">0</span>
         (<span id="candidateLabel"></span>Q<span id="itemQNum">1</span>)
-      </div>
-      <div class="headerButtons">
-        <button id="btnShowAnswer">Mostrar Resposta</button>
-        <button id="btnCalculator">Calculadora</button>
       </div>
     </div>
     <hr>
@@ -190,21 +188,29 @@
   <div class="statusbar"><span id="statusText">Selecione a melhor alternativa.</span></div>
 
   <div class="bottombar">
-    <button id="btnPrevious">Anterior</button>
-    <button id="btnNext">Proxima</button>
-    <div class="reviewDropdownWrap">
-      <button id="btnReview">Revisao</button>
-      <div class="reviewMenu" id="reviewMenu" style="display:none;">
-        <div data-mode="all">Revisar Todas</div>
-        <div data-mode="marked">Revisar Marcadas</div>
-        <div data-mode="incomplete">Revisar Incompletas</div>
-        <div data-mode="wrong">Revisar Erradas</div>
-      </div>
+    <div class="bbGroup">
+      <button id="btnPrevious">&#9664; Anterior</button>
+      <button id="btnNext">Proxima &#9654;</button>
     </div>
-    <button id="btnBackToSetup">Menu Inicial</button>
+    <div class="bbGroup bbGroupCenter">
+      <div class="reviewDropdownWrap">
+        <button id="btnReview">Revisao &#9650;</button>
+        <div class="reviewMenu" id="reviewMenu" style="display:none;">
+          <div data-mode="all">Revisar Todas</div>
+          <div data-mode="marked">Revisar Marcadas</div>
+          <div data-mode="incomplete">Revisar Incompletas</div>
+          <div data-mode="wrong">Revisar Erradas</div>
+        </div>
+      </div>
+      <button id="btnShowAnswer">Mostrar Resposta</button>
+      <button id="btnCalculator">Calculadora</button>
+    </div>
     <div class="spacer"></div>
-    <button id="btnSave">Salvar Sessao</button>
-    <button id="btnEnd" class="primary">Finalizar Exame</button>
+    <div class="bbGroup">
+      <button id="btnBackToSetup">Menu Inicial</button>
+      <button id="btnSave">Salvar Sessao</button>
+      <button id="btnEnd" class="primary">Finalizar Exame</button>
+    </div>
   </div>
 </div>
 
@@ -240,6 +246,52 @@
     <div class="reportButtons">
       <button id="btnClearHistory">Limpar Historico</button>
       <button id="closeHistory" class="primary">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CONFIGURACOES ===================== -->
+<div class="reportOverlay" id="settingsOverlay" style="display:none;">
+  <div class="reportBox settingsBox">
+    <div class="reportTitleBar">Configuracoes</div>
+    <div class="reportBody">
+      <h3 class="settingsSectionFirst">Aparencia</h3>
+      <div class="settingsRow">
+        <label for="settingsTheme">Tema</label>
+        <select id="settingsTheme">
+          <option value="light">Claro</option>
+          <option value="dark">Escuro</option>
+          <option value="auto">Automatico (segue o sistema)</option>
+        </select>
+      </div>
+      <div class="settingsRow">
+        <label for="settingsFontSize">Tamanho da fonte</label>
+        <select id="settingsFontSize">
+          <option value="14">Pequena</option>
+          <option value="16">Normal</option>
+          <option value="18">Grande</option>
+          <option value="21">Muito grande</option>
+          <option value="24">Extra grande</option>
+        </select>
+      </div>
+
+      <h3>Botoes durante a prova</h3>
+      <label class="checkRow">
+        <input type="checkbox" id="settingsShowAnswerBtn" checked>
+        Mostrar o botao "Mostrar Resposta"
+      </label>
+      <label class="checkRow">
+        <input type="checkbox" id="settingsCalculatorBtn" checked>
+        Mostrar o botao "Calculadora"
+      </label>
+      <label class="checkRow">
+        <input type="checkbox" id="settingsReviewBtn" checked>
+        Mostrar o botao "Revisao"
+      </label>
+      <p class="settingsNote">Util para simular uma prova real sem essas ajudas. Novas opcoes serao adicionadas aqui no futuro.</p>
+    </div>
+    <div class="reportButtons">
+      <button id="closeSettings" class="primary">Fechar</button>
     </div>
   </div>
 </div>

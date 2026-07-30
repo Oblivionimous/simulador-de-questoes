@@ -74,6 +74,26 @@ function applyTheme(theme) {
   document.querySelectorAll('.themeToggleBtn').forEach(btn => { btn.textContent = label; });
 }
 
+// Preferencia bruta salva: 'dark' | 'light' | null (null = automatico,
+// segue o esquema de cores do sistema operacional).
+function themePreference() {
+  const saved = localStorage.getItem(THEME_KEY);
+  return (saved === 'dark' || saved === 'light') ? saved : 'auto';
+}
+
+// Igual applyTheme(), mas tambem aceita 'auto' (usado pelo select em
+// Configuracoes; o botao rapido da barra de titulo so alterna claro/escuro).
+function setThemePreference(pref) {
+  if (pref === 'auto') {
+    localStorage.removeItem(THEME_KEY);
+    document.documentElement.removeAttribute('data-theme');
+    const label = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
+    document.querySelectorAll('.themeToggleBtn').forEach(btn => { btn.textContent = label; });
+  } else {
+    applyTheme(pref);
+  }
+}
+
 function initThemeToggle() {
   const label = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
   document.querySelectorAll('.themeToggleBtn').forEach(btn => {
@@ -114,6 +134,66 @@ function initFontSizeControls() {
   document.querySelectorAll('.fontIncBtn').forEach(b => {
     b.addEventListener('click', () => applyFontSize(currentFontSize() + FONT_SIZE_STEP));
   });
+}
+
+// ============================================================
+// CONFIGURACOES (menu de opcoes extras, ponto de extensao para o futuro)
+// ============================================================
+const BUTTON_PREFS_KEY = 'vce_button_prefs';
+const BUTTON_PREFS_DEFAULT = { showAnswer: true, calculator: true, review: true };
+
+function getButtonPrefs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BUTTON_PREFS_KEY));
+    return Object.assign({}, BUTTON_PREFS_DEFAULT, saved || {});
+  } catch (e) { return Object.assign({}, BUTTON_PREFS_DEFAULT); }
+}
+
+function saveButtonPrefs(prefs) {
+  localStorage.setItem(BUTTON_PREFS_KEY, JSON.stringify(prefs));
+}
+
+// Mostra/oculta os botoes opcionais da tela de prova conforme as
+// preferencias salvas. Chamado ao entrar na tela de prova e sempre que
+// as opcoes mudam em Configuracoes (se a prova ja estiver aberta).
+function applyButtonPrefs() {
+  const prefs = getButtonPrefs();
+  const showAnswerBtn = el('btnShowAnswer');
+  const calcBtn = el('btnCalculator');
+  const reviewWrap = document.querySelector('.reviewDropdownWrap');
+  if (showAnswerBtn) showAnswerBtn.style.display = prefs.showAnswer ? '' : 'none';
+  if (calcBtn) calcBtn.style.display = prefs.calculator ? '' : 'none';
+  if (reviewWrap) reviewWrap.style.display = prefs.review ? '' : 'none';
+  if (!prefs.calculator) el('calculatorPanel').style.display = 'none';
+}
+
+function initSettingsMenu() {
+  const overlay = el('settingsOverlay');
+  document.querySelectorAll('.settingsBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      el('settingsTheme').value = themePreference();
+      el('settingsFontSize').value = String(currentFontSize());
+      const prefs = getButtonPrefs();
+      el('settingsShowAnswerBtn').checked = prefs.showAnswer;
+      el('settingsCalculatorBtn').checked = prefs.calculator;
+      el('settingsReviewBtn').checked = prefs.review;
+      overlay.style.display = 'flex';
+    });
+  });
+  el('closeSettings').addEventListener('click', () => { overlay.style.display = 'none'; });
+
+  el('settingsTheme').addEventListener('change', (e) => setThemePreference(e.target.value));
+  el('settingsFontSize').addEventListener('change', (e) => applyFontSize(parseInt(e.target.value, 10)));
+
+  function updateButtonPref(key, checked) {
+    const prefs = getButtonPrefs();
+    prefs[key] = checked;
+    saveButtonPrefs(prefs);
+    applyButtonPrefs();
+  }
+  el('settingsShowAnswerBtn').addEventListener('change', (e) => updateButtonPref('showAnswer', e.target.checked));
+  el('settingsCalculatorBtn').addEventListener('change', (e) => updateButtonPref('calculator', e.target.checked));
+  el('settingsReviewBtn').addEventListener('change', (e) => updateButtonPref('review', e.target.checked));
 }
 
 // ============================================================
@@ -367,6 +447,7 @@ function enterExamScreen() {
   el('examScreen').style.display = 'flex';
   el('examTitle').textContent = config.examTitle + ' - VCE Web Player';
   el('candidateLabel').textContent = config.candidate + ' - ';
+  applyButtonPrefs();
 
   // cronometro de tempo decorrido (sempre roda, para o relatorio)
   clearInterval(timerInterval);
@@ -1298,6 +1379,7 @@ function startCustomRetake(examId, ids) {
 (async function init() {
   initThemeToggle();
   initFontSizeControls();
+  initSettingsMenu();
   bindClientErrorLogging();
   await loadExams();
   initSetupScreen();
