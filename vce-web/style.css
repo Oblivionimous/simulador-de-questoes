@@ -312,13 +312,13 @@ select.numSmall { width: auto; }
 
 /* ---------------- IMPORTAR SIMULADO ---------------- */
 #btnImportToggle {
-  padding: 7px 12px;
+  padding: 5px 10px;
   border: 1px solid var(--border-strong);
   background: var(--bg-hover);
   color: var(--text);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.867rem;
+  font-size: 0.8rem;
   white-space: nowrap;
 }
 
