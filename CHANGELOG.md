@@ -10,6 +10,24 @@ mudança feita no projeto.
 - Este arquivo (`CHANGELOG.md`), para manter o controle das mudanças
   registrado no git, além de serem informadas na conversa.
 
+## 2026-07-30 — Treino das questões deixadas em branco
+
+**Motivação:** as estatísticas mostravam e treinavam as questões mais
+erradas, mas não havia opção equivalente para as deixadas em branco.
+
+### Adicionado
+- Nova seção "Questoes deixadas em branco" no overlay de Estatísticas,
+  com barras âmbar mostrando quantas vezes cada questão ficou sem
+  resposta.
+- Botão **"Treinar as N questoes deixadas em branco"** (âmbar), que abre
+  na hora uma prova personalizada só com elas, igual ao treino das mais
+  erradas.
+
+### Testes realizados
+- Playwright: prova com 1 errada e 2 em branco → seção listou Q2/Q3 com
+  100% em branco e o botão abriu treino com exatamente essas 2 questões;
+  sem erros de console.
+
 ## 2026-07-30 — Estatísticas de estudo e polimento visual
 
 **Motivação:** dar visibilidade de onde reforçar os estudos — percentuais,

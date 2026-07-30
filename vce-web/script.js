@@ -1144,20 +1144,25 @@ function openStats(examId) {
     if (rows) topicSection = `<h3>Desempenho por topico</h3>${rows}`;
   }
 
-  // ---------- questoes que mais erra / mais acerta ----------
+  // ---------- questoes que mais erra / deixa em branco / mais acerta ----------
   const entries = Object.entries(ex.questions).map(([qid, qs]) => ({ qid: +qid, ...qs }));
   const worst = entries.filter(q => q.wrong > 0)
     .sort((a, b) => b.wrong - a.wrong || (b.wrong / b.seen) - (a.wrong / a.seen))
+    .slice(0, 8);
+  const blankQ = entries.filter(q => q.blank > 0)
+    .sort((a, b) => b.blank - a.blank || (b.blank / b.seen) - (a.blank / a.seen))
     .slice(0, 8);
   const bestQ = entries.filter(q => q.correct > 0)
     .sort((a, b) => (b.correct / b.seen) - (a.correct / a.seen) || b.correct - a.correct)
     .slice(0, 8);
 
   function qRows(list, kind) {
+    const field = { bad: 'wrong', blank: 'blank', good: 'correct' }[kind];
+    const word = { bad: 'erro(s)', blank: 'em branco', good: 'acerto(s)' }[kind];
     return list.map(q => {
-      const rate = Math.round(((kind === 'bad' ? q.wrong : q.correct) / q.seen) * 100);
+      const rate = Math.round((q[field] / q.seen) * 100);
       const snip = questionSnippet(selected, q.qid);
-      const detail = kind === 'bad' ? `${q.wrong} erro(s) em ${q.seen}` : `${q.correct} acerto(s) em ${q.seen}`;
+      const detail = `${q[field]} ${word} em ${q.seen}`;
       return `<div class="qStatRow" title="${escapeHtml(snip)}">
         <span class="qStatLabel">Q${q.qid}</span>
         <div class="qStatTrack"><div class="qStatFill ${kind}" style="width:${rate}%"></div></div>
@@ -1170,20 +1175,30 @@ function openStats(examId) {
   const worstSection = worst.length
     ? `<h3>Questoes que voce mais erra</h3>${qRows(worst, 'bad')}`
     : '';
+  const blankSection = blankQ.length
+    ? `<h3>Questoes deixadas em branco</h3>${qRows(blankQ, 'blank')}`
+    : '';
   const bestSection = bestQ.length
     ? `<h3>Questoes que voce mais acerta</h3>${qRows(bestQ, 'good')}`
     : '';
 
-  // botao de treino: refaz as questoes mais erradas (se a prova estiver carregada)
-  const trainIds = loadedExam
-    ? entries.filter(q => q.wrong > 0)
-        .sort((a, b) => b.wrong - a.wrong)
-        .map(q => q.qid)
-        .filter(qid => loadedExam.questions.some(qq => qq.id === qid))
-        .slice(0, 15)
-    : [];
+  // botoes de treino: refaz as mais erradas / as em branco (se a prova estiver carregada)
+  function trainList(field) {
+    return loadedExam
+      ? entries.filter(q => q[field] > 0)
+          .sort((a, b) => b[field] - a[field])
+          .map(q => q.qid)
+          .filter(qid => loadedExam.questions.some(qq => qq.id === qid))
+          .slice(0, 15)
+      : [];
+  }
+  const trainIds = trainList('wrong');
+  const trainBlankIds = trainList('blank');
   const trainBtn = trainIds.length
     ? `<button id="btnTrainWorst" class="trainBtn">Treinar as ${trainIds.length} questoes que voce mais erra</button>`
+    : '';
+  const trainBlankBtn = trainBlankIds.length
+    ? `<button id="btnTrainBlank" class="trainBtn blankTrain">Treinar as ${trainBlankIds.length} questoes deixadas em branco</button>`
     : '';
 
   body.innerHTML = `
@@ -1203,6 +1218,8 @@ function openStats(examId) {
     ${topicSection}
     ${worstSection}
     ${trainBtn}
+    ${blankSection}
+    ${trainBlankBtn}
     ${bestSection}
     ${loadedExam ? '' : '<p class="statsNote">Obs: esta prova nao esta carregada no app, entao topicos e enunciados nao podem ser exibidos.</p>'}
   `;
@@ -1212,6 +1229,11 @@ function openStats(examId) {
   if (tb) tb.addEventListener('click', () => {
     el('statsOverlay').style.display = 'none';
     startCustomRetake(selected, trainIds);
+  });
+  const tbb = el('btnTrainBlank');
+  if (tbb) tbb.addEventListener('click', () => {
+    el('statsOverlay').style.display = 'none';
+    startCustomRetake(selected, trainBlankIds);
   });
 
   el('statsOverlay').style.display = 'flex';
