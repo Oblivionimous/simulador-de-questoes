@@ -1,0 +1,3 @@
+# Pastas criadas em runtime pelo backend PHP (nao versionar)
+vce-web/sessions/
+vce-web/logs/

@@ -6,9 +6,12 @@
 // ============================================================
 header('Content-Type: application/json; charset=utf-8');
 require __DIR__ . '/lib_exams.php';
+require __DIR__ . '/lib_log.php';
 
 $dir = __DIR__ . '/simulados';
 $files = ve_load_manifest($dir);
 $exams = ve_build_exams_array($dir, $files);
+
+ve_log('access', 'GET simulados.php', ['exams' => count($exams)]);
 
 echo json_encode(['exams' => $exams], JSON_UNESCAPED_UNICODE);

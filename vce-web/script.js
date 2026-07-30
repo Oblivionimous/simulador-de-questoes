@@ -69,16 +69,79 @@ function currentTheme() {
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(THEME_KEY, theme);
-  const btn = el('themeToggle');
-  if (btn) btn.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+  const label = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+  document.querySelectorAll('.themeToggleBtn').forEach(btn => { btn.textContent = label; });
 }
 
 function initThemeToggle() {
-  const btn = el('themeToggle');
-  if (!btn) return;
-  btn.textContent = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
-  btn.addEventListener('click', () => {
-    applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+  const label = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
+  document.querySelectorAll('.themeToggleBtn').forEach(btn => {
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+    });
+  });
+}
+
+// ============================================================
+// TAMANHO DA FONTE (ACESSIBILIDADE)
+// ============================================================
+const FONT_SIZE_KEY = 'vce_font_size';
+const FONT_SIZE_MIN = 14;
+const FONT_SIZE_MAX = 26;
+const FONT_SIZE_DEFAULT = 16;
+const FONT_SIZE_STEP = 2;
+
+function currentFontSize() {
+  const saved = parseInt(localStorage.getItem(FONT_SIZE_KEY), 10);
+  return (saved >= FONT_SIZE_MIN && saved <= FONT_SIZE_MAX) ? saved : FONT_SIZE_DEFAULT;
+}
+
+function applyFontSize(px) {
+  const size = Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, px));
+  document.documentElement.style.fontSize = size + 'px';
+  localStorage.setItem(FONT_SIZE_KEY, String(size));
+  document.querySelectorAll('.fontDecBtn').forEach(b => { b.disabled = size <= FONT_SIZE_MIN; });
+  document.querySelectorAll('.fontIncBtn').forEach(b => { b.disabled = size >= FONT_SIZE_MAX; });
+}
+
+function initFontSizeControls() {
+  applyFontSize(currentFontSize());
+  document.querySelectorAll('.fontDecBtn').forEach(b => {
+    b.addEventListener('click', () => applyFontSize(currentFontSize() - FONT_SIZE_STEP));
+  });
+  document.querySelectorAll('.fontIncBtn').forEach(b => {
+    b.addEventListener('click', () => applyFontSize(currentFontSize() + FONT_SIZE_STEP));
+  });
+}
+
+// ============================================================
+// LOG DE ERROS DO CLIENTE (enviado ao servidor quando disponivel)
+// ============================================================
+function bindClientErrorLogging() {
+  function send(payload) {
+    if (!serverAvailable) return;
+    try {
+      fetch('log_client.php', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    } catch (e) {}
+  }
+  window.addEventListener('error', (e) => {
+    send({
+      type: 'error',
+      message: String(e.message || '').slice(0, 500),
+      source: String(e.filename || '').slice(0, 200),
+      line: e.lineno || 0,
+      col: e.colno || 0
+    });
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    send({
+      type: 'unhandledrejection',
+      message: String((e.reason && e.reason.message) || e.reason || '').slice(0, 500)
+    });
   });
 }
 
@@ -360,7 +423,7 @@ function initImportUI() {
     return;
   }
 
-  hint.textContent = 'Selecione um arquivo .txt no formato padronizado (veja FORMATO_QUESTOES.md).';
+  hint.textContent = 'Selecione o arquivo .txt do simulado no formato padronizado e clique em Enviar.';
   btn.addEventListener('click', () => {
     const file = fileInput.files[0];
     if (!file) { showImportStatus('Escolha um arquivo .txt primeiro.', 'error'); return; }
@@ -995,6 +1058,8 @@ function startCustomRetake(examId, ids) {
 // ============================================================
 (async function init() {
   initThemeToggle();
+  initFontSizeControls();
+  bindClientErrorLogging();
   await loadExams();
   initSetupScreen();
   bindExamEvents();

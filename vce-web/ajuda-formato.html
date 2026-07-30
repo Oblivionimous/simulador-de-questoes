@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como montar o arquivo .txt do simulado</title>
+<link rel="stylesheet" href="style.css">
+<script>
+// Aplica o tema e o tamanho de fonte salvos antes de renderizar a pagina
+// (mesma logica do index.html, para manter a aparencia consistente).
+(function () {
+  try {
+    var saved = localStorage.getItem('vce_theme');
+    if (saved === 'dark' || saved === 'light') {
+      document.documentElement.setAttribute('data-theme', saved);
+    }
+    var fs = parseInt(localStorage.getItem('vce_font_size'), 10);
+    if (fs >= 14 && fs <= 26) {
+      document.documentElement.style.fontSize = fs + 'px';
+    }
+  } catch (e) {}
+})();
+</script>
+<style>
+  .helpCard pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    padding: 12px;
+    overflow-x: auto;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8125rem;
+    border-radius: 4px;
+    color: var(--text);
+    white-space: pre;
+  }
+  .helpCard code {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8125rem;
+  }
+  .helpCard h3 {
+    margin: 24px 0 8px 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  .helpCard table { border-collapse: collapse; width: 100%; font-size: 0.875rem; }
+  .helpCard th, .helpCard td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .helpCard th { background: var(--bg-soft); }
+  .helpCard li { margin: 6px 0; line-height: 1.5; }
+  .helpCard p { line-height: 1.6; }
+  .aiBox {
+    background: var(--info-bg);
+    color: var(--info-text);
+    border: 1px solid var(--info-text);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    line-height: 1.6;
+  }
+  .backLink { display: inline-block; margin-bottom: 14px; color: var(--info-text); }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <span>VCE Web Player - Ajuda: formato do simulado (.txt)</span>
+  <div class="titlebarActions">
+    <div class="fontSizeControls">
+      <button class="fontSizeBtn fontDecBtn" type="button" title="Diminuir tamanho da fonte">A-</button>
+      <button class="fontSizeBtn fontIncBtn" type="button" title="Aumentar tamanho da fonte">A+</button>
+    </div>
+    <button class="themeToggleBtn" type="button">Modo escuro</button>
+  </div>
+</div>
+
+<div class="setupWrap">
+  <div class="setupCard helpCard">
+    <a class="backLink" href="index.html">&larr; Voltar ao simulador</a>
+    <h2>Como montar o arquivo .txt do simulado</h2>
+
+    <p>O simulador importa provas a partir de um arquivo de texto simples
+    (<code>.txt</code>) num formato padronizado. Esta página explica o formato e
+    mostra como pedir para uma IA converter suas questões automaticamente.</p>
+
+    <div class="aiBox">
+      <strong>Dica: deixe a IA fazer o trabalho.</strong> Você não precisa montar o
+      arquivo na mão: cole o texto bruto das suas questões (de um PDF, site ou
+      apostila) em uma IA (ChatGPT, Claude, Gemini etc.) junto com as instruções do
+      arquivo <a href="FORMATO_QUESTOES.md" target="_blank" rel="noopener">FORMATO_QUESTOES.md</a>
+      e peça: <em>"converta estas questões para o formato .txt descrito"</em>.
+      A IA devolve o arquivo pronto — é só salvar como <code>.txt</code> e importar
+      pelo botão "Importar Simulado" na tela inicial.
+    </div>
+
+    <h3>1. Estrutura geral</h3>
+    <p>O arquivo começa com um bloco de metadados e depois traz uma questão atrás
+    da outra, cada uma iniciada por <code>@@@</code> seguido do número:</p>
+<pre>===META===
+ID: minha-prova-1
+TITULO: Minha Prova de Exemplo
+NOTA_MINIMA: 500
+===FIM META===
+
+@@@1
+TOPICO: 1
+TIPO: single
+PERGUNTA: Qual comando exibe o nome do host atual do sistema Linux?
+A: hostname
+B: whoami
+C: uname -a
+D: id
+RESPOSTA: A
+EXPLICACAO: O comando hostname exibe (ou define) o nome do host da maquina.
+
+@@@2
+TOPICO: 1
+TIPO: multi
+PERGUNTA: Quais comandos exibem uso de memoria? (Escolha DUAS.)
+A: free
+B: vmstat
+C: passwd
+D: chmod
+RESPOSTA: A,B
+EXPLICACAO: free resume RAM/swap; vmstat mostra memoria, paginacao e I/O.
+
+@@@3
+TOPICO: 2
+TIPO: text
+PERGUNTA: Informe o caminho completo do arquivo que define os pontos de montagem do boot.
+RESPOSTA: /etc/fstab
+EXPLICACAO: O /etc/fstab lista os filesystems montados automaticamente no boot.</pre>
+
+    <h3>2. Campos do bloco META</h3>
+    <table>
+      <tr><th>Campo</th><th>Significado</th></tr>
+      <tr><td><code>ID:</code></td><td>Identificador único da prova (sem espaços; ex.: <code>lpi-202-450</code>). Se duas provas tiverem o mesmo ID, a importação pede confirmação para sobrescrever.</td></tr>
+      <tr><td><code>TITULO:</code></td><td>Nome exibido no menu "Prova" da tela inicial.</td></tr>
+      <tr><td><code>NOTA_MINIMA:</code></td><td>Nota de aprovação na escala 0-1000 (padrão: 500).</td></tr>
+    </table>
+
+    <h3>3. Campos de cada questão</h3>
+    <table>
+      <tr><th>Campo</th><th>Significado</th></tr>
+      <tr><td><code>@@@N</code></td><td>Início da questão de número N (ex.: <code>@@@1</code>, <code>@@@2</code>...).</td></tr>
+      <tr><td><code>TOPICO:</code></td><td>Número do tópico/seção da questão (usado no filtro por tópico e no desempenho por tópico do relatório).</td></tr>
+      <tr><td><code>TIPO:</code></td><td><code>single</code> (uma resposta), <code>multi</code> (várias respostas) ou <code>text</code> (resposta digitada).</td></tr>
+      <tr><td><code>PERGUNTA:</code></td><td>O enunciado. Pode ter várias linhas; saídas de terminal/código vão entre <code>```</code> e <code>```</code>.</td></tr>
+      <tr><td><code>A:</code> a <code>E:</code></td><td>As alternativas (apenas para <code>single</code>/<code>multi</code>; omita em <code>text</code>).</td></tr>
+      <tr><td><code>RESPOSTA:</code></td><td>A letra correta (ex.: <code>B</code>); várias letras separadas por vírgula para <code>multi</code> (ex.: <code>B,D</code>); ou o texto esperado para <code>text</code> (ex.: <code>/etc/inittab</code>). Para <code>text</code> com mais de uma resposta aceita, separe por vírgula.</td></tr>
+      <tr><td><code>EXPLICACAO:</code></td><td>Explicação exibida junto com o gabarito (opcional, mas recomendada). Pode ter várias linhas.</td></tr>
+    </table>
+
+    <h3>4. Regras importantes</h3>
+    <ul>
+      <li>Cada campo fica em sua própria linha, com o rótulo em MAIÚSCULAS seguido de dois pontos.</li>
+      <li>Deixe uma linha em branco entre uma questão e a próxima.</li>
+      <li>Blocos de código/saída de terminal devem ficar entre <code>```</code> e <code>```</code> — o simulador os exibe formatados.</li>
+      <li>Ao traduzir questões, mantenha termos técnicos em inglês (comandos, caminhos de arquivos, siglas como RAID/LVM/PXE, saídas de terminal).</li>
+      <li>O arquivo deve ser texto puro (<code>.txt</code>), com no máximo 3MB.</li>
+    </ul>
+
+    <h3>5. Como importar</h3>
+    <ol>
+      <li>Na tela inicial, clique em <strong>"Importar Simulado"</strong> (ao lado do seletor de prova).</li>
+      <li>Escolha o arquivo <code>.txt</code> e clique em <strong>Enviar</strong>.</li>
+      <li>A prova aparece imediatamente no menu "Prova" — sem precisar recarregar a página.</li>
+    </ol>
+    <p class="importHint">A importação pelo navegador funciona no modo com servidor PHP
+    (<code>php -S localhost:8000</code> ou site hospedado). No modo offline (duplo clique
+    no index.html), salve o .txt na pasta <code>simulados/</code>, adicione o nome dele no
+    <code>simulados/manifest.json</code> e rode <code>php gerar_exams.php</code>.</p>
+
+    <a class="backLink" href="index.html">&larr; Voltar ao simulador</a>
+  </div>
+</div>
+
+<script>
+// Controles de tema e fonte desta pagina (mesmo comportamento do app).
+(function () {
+  var THEME_KEY = 'vce_theme', FONT_KEY = 'vce_font_size';
+  var MIN = 14, MAX = 26, DEF = 16, STEP = 2;
+
+  function currentTheme() {
+    var attr = document.documentElement.getAttribute('data-theme');
+    if (attr === 'dark' || attr === 'light') return attr;
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+    var label = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+    document.querySelectorAll('.themeToggleBtn').forEach(function (b) { b.textContent = label; });
+  }
+  function currentFont() {
+    var saved = parseInt(localStorage.getItem(FONT_KEY), 10);
+    return (saved >= MIN && saved <= MAX) ? saved : DEF;
+  }
+  function applyFont(px) {
+    var size = Math.min(MAX, Math.max(MIN, px));
+    document.documentElement.style.fontSize = size + 'px';
+    try { localStorage.setItem(FONT_KEY, String(size)); } catch (e) {}
+    document.querySelectorAll('.fontDecBtn').forEach(function (b) { b.disabled = size <= MIN; });
+    document.querySelectorAll('.fontIncBtn').forEach(function (b) { b.disabled = size >= MAX; });
+  }
+
+  document.querySelectorAll('.themeToggleBtn').forEach(function (b) {
+    b.textContent = currentTheme() === 'dark' ? 'Modo claro' : 'Modo escuro';
+    b.addEventListener('click', function () { applyTheme(currentTheme() === 'dark' ? 'light' : 'dark'); });
+  });
+  applyFont(currentFont());
+  document.querySelectorAll('.fontDecBtn').forEach(function (b) {
+    b.addEventListener('click', function () { applyFont(currentFont() - STEP); });
+  });
+  document.querySelectorAll('.fontIncBtn').forEach(function (b) {
+    b.addEventListener('click', function () { applyFont(currentFont() + STEP); });
+  });
+})();
+</script>
+</body>
+</html>

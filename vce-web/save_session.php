@@ -1,8 +1,10 @@
 <?php
 // Salva o progresso do simulado em um arquivo local (sessions/session.json)
 header('Content-Type: application/json');
+require __DIR__ . '/lib_log.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    ve_log('error', 'save_session.php: metodo nao permitido (' . $_SERVER['REQUEST_METHOD'] . ')');
     http_response_code(405);
     echo json_encode(['ok' => false, 'error' => 'Metodo nao permitido']);
     exit;
@@ -14,6 +16,7 @@ $maxBytes = 2 * 1024 * 1024;
 $raw = file_get_contents('php://input', false, null, 0, $maxBytes + 1);
 
 if ($raw === false || strlen($raw) > $maxBytes) {
+    ve_log('error', 'save_session.php: payload muito grande');
     http_response_code(413);
     echo json_encode(['ok' => false, 'error' => 'Payload muito grande']);
     exit;
@@ -22,6 +25,7 @@ if ($raw === false || strlen($raw) > $maxBytes) {
 $data = json_decode($raw, true);
 
 if (!is_array($data)) {
+    ve_log('error', 'save_session.php: JSON invalido');
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => 'JSON inválido']);
     exit;

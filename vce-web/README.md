@@ -32,10 +32,15 @@ questões) e um simulado de demonstração com 3 questões.
 - **Opções da tela inicial lembradas automaticamente** (prova, modo,
   embaralhar, nota mínima, timer etc.) — ao voltar ao app, o formulário já
   vem preenchido como da última vez.
-- **Importar uma prova nova pelo navegador**: botão "Importar .txt" ao lado
-  do seletor de prova abre um painel para enviar um `.txt` no formato
+- **Importar uma prova nova pelo navegador**: botão "Importar Simulado" ao
+  lado do seletor de prova abre um painel para enviar um `.txt` no formato
   padronizado (modo servidor PHP), sem precisar editar arquivos manualmente
-  no servidor.
+  no servidor. O painel tem um link para a página de ajuda
+  (`ajuda-formato.html`) que explica o formato e como pedir a conversão
+  para uma IA.
+- **Acessibilidade**: botões A-/A+ na barra de título aumentam/diminuem o
+  tamanho da fonte de toda a interface (salvo no navegador), para quem tem
+  dificuldade de leitura.
 - **Modo escuro**: botão no canto superior direito (visível em todas as
   telas) alterna entre claro e escuro. A escolha fica salva no navegador
   (`localStorage`) e, se você nunca escolheu nada, o app já abre seguindo o
@@ -162,8 +167,10 @@ rode `php gerar_exams.php` para atualizar o `exams.js`.
 
 1. Pegue o dump bruto das questões, cole na IA junto com o texto de
    `FORMATO_QUESTOES.md` e salve o `.txt` padronizado que ela devolver.
-2. Na tela inicial do app, clique em "Importar .txt" (ao lado do seletor
-   de prova) e envie o arquivo pelo painel que abre.
+   (A página `ajuda-formato.html`, linkada no painel de importação,
+   explica o formato e esse fluxo com IA em detalhes.)
+2. Na tela inicial do app, clique em "Importar Simulado" (ao lado do
+   seletor de prova) e envie o arquivo pelo painel que abre.
 3. Pronto — o app salva o arquivo em `simulados/`, atualiza o
    `manifest.json` e regenera o `exams.js` automaticamente, sem precisar
    mexer em nada no servidor. A prova já aparece no dropdown "Prova" sem
@@ -241,15 +248,34 @@ vce-web/
 │   ├── lpi-201-450.txt
 │   ├── EXEMPLO-modelo.txt
 │   └── manifest.json
+├── ajuda-formato.html                  -> página de ajuda: formato do .txt + conversão por IA
 ├── parser.php                          -> parser do formato .txt (compartilhado)
 ├── lib_exams.php                       -> funcoes compartilhadas (manifest/parse/exams.js)
+├── lib_log.php                         -> log em arquivo (canais access/error/client)
 ├── simulados.php                       -> carregador dinâmico (modo servidor/site)
 ├── gerar_exams.php                     -> gera o exams.js a partir dos .txt
 ├── import_simulado.php                 -> recebe upload de .txt pela tela inicial
 ├── save_session.php, load_session.php  -> salvar/carregar sessão em disco (servidor)
+├── log_client.php                      -> recebe erros de JS do navegador
 ├── sessions/                            -> criada em runtime pelo save_session.php
+├── logs/                                -> criada em runtime: access/error/client por dia
 └── FORMATO_QUESTOES.md                 -> instrução para a IA padronizar questões
 ```
+
+## Logs
+
+No modo servidor PHP, o app grava logs diários na pasta `logs/` (criada
+automaticamente, fora do git):
+
+- `access-AAAA-MM-DD.log` — carregamentos de provas, importações e leituras
+  de sessão (com IP e horário).
+- `error-AAAA-MM-DD.log` — falhas dos endpoints (upload inválido, payload
+  grande, método errado etc.).
+- `client-AAAA-MM-DD.log` — erros de JavaScript capturados no navegador dos
+  usuários e enviados via `log_client.php`.
+
+Em servidores Apache, a pasta é protegida contra acesso via web por um
+`.htaccess` gerado automaticamente.
 
 ## Observações
 
