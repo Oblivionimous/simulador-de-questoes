@@ -41,13 +41,23 @@ extensão para configurações extras no futuro.
   questão (que agora mostra só "Item X de Y") e foram para a barra
   inferior, junto do botão "Revisão".
 
+### Corrigido
+- Botões da barra inferior desalinhados/empilhados com fonte grande ou
+  zoom: os grupos agora nunca quebram linha internamente (`flex-wrap:
+  nowrap` + `flex-shrink: 0` + `white-space: nowrap`); em telas estreitas
+  um grupo inteiro desce de linha como bloco. O wrapper do dropdown de
+  Revisão virou flex para eliminar um desnível de 2px, e os botões da
+  barra passaram a escalar junto com o A-/A+ (fonte em `rem`).
+
 ### Testes realizados
 - Playwright: menu de Configurações abre nas duas telas; tema Automático
   remove a preferência salva; tamanho de fonte via seletor aplica
   corretamente; ocultar Calculadora/Revisão via Configurações some com os
   botões na hora (inclusive com a prova já em andamento) e reativar os
   traz de volta; fluxo de Mostrar Resposta e Calculadora seguem
-  funcionando após a reorganização; sem erros de console.
+  funcionando após a reorganização; alinhamento da barra inferior
+  verificado por bounding box em 4 combinações de fonte (16/26px) e
+  largura (900/1280/1400px); sem erros de console.
 
 ## 2026-07-30 — Treino das questões deixadas em branco
 
